@@ -38,6 +38,7 @@ function getAccessToken()
     $context = stream_context_create($options);
     $response = file_get_contents($url, false, $context);
 
+    // TODO: Probably fix this print statement
     if ($response === false) {
         echo "Error Response:" + var_dump(error_get_last());
         die("HTTP request failed");

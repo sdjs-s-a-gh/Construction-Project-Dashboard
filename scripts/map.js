@@ -6,9 +6,9 @@ function initMap() {
     // Set the coordinates for a certain place
     const centreLatLgn = [54.97874064957384, -1.6100522109054864];
 
-    // Initialise the map and assign it to the div titled "map" programmatically,
-    // with a zoom of 14x
-    const map = L.map("map").setView(centreLatLgn, 16);
+    // Initialise the map and assign it to the div titled "map" programmatically.
+    // A zoom of 14x is sufficient to view all projects at first glance.
+    const map = L.map("map").setView(centreLatLgn, 14);
 
     // Ensure the map can actually load the tiles required to make up a single view (a map is based on several images - not just one)
     // Additionally, add the attribution tag to comply with OpenStreetMaps's license.
@@ -127,7 +127,7 @@ async function initTableAndMarkers(map, markerGroup) {
                 latlng: row.id
             }
 
-            createMarker(poi, map, markerGroup);
+            //createMarker(poi, map, markerGroup);
 
             // Update the Weather for the selected area.
             const latlngArray = row.id.split(",");
