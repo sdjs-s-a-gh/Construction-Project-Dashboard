@@ -3,7 +3,6 @@ require "exception_handler.php";
 require "autoloader.php";
 $ENV = require "env.php";
 
-
 /**
  * Retrieves an OAuth token for the website from Microsoft Azure.
  */
@@ -139,7 +138,7 @@ function handleWeatherHistorical(Request $request, string $apiKey)
         "http" => [
             "ignore_errors" => true
         ]
-    ];//
+    ]; //
 
     $context = stream_context_create($options);
     $response = file_get_contents($url, false, $context);
@@ -173,40 +172,31 @@ function handlePollutionCurrent(Request $request, string $apiKey)
 }
 
 /**
- * Returns data from the cloud database.
+ * Returns the list of projects from the cloud database with sufficient data for a table.
  */
-function handlePointsOfInterest()
+function handleProjectList(Database $db)
 {
-    // TODO: The variables for the code immediately below can be stored in an env file.
-    // TODO: Add a try-catch here for the SQL connection. Maybe an asynch call as well with a loading screen.
-    // TODO: Could store this data in the Azure Key Vault as well.
-    $serverName = "citytourwebsite-wk10-workshop.database.windows.net, 1433";
-    $connectionInfo = array(
-        "database" => "citytour",
-        "uid" => "w23027648",
-        "pwd" => "CandBtorture2122"
-    );
+    $sqlQuery = "SELECT project_id, title, geolocation FROM tblProjects";
+    $data = $db->executeSQL($sqlQuery);
 
-    // Establish the connection with the SQL database.
-    $dbConnection = sqlsrv_connect($serverName, $connectionInfo);
-    if ($dbConnection === false) {
-        throw new ClientError(sqlsrv_errors(), 404);
-    }
+    return $data;
+}
 
-    // Retrive all entries from the database.
-    $sqlQuery = "SELECT * FROM [dbo].[tblPointsOfInterest]";
-    $stmt = sqlsrv_query($dbConnection, $sqlQuery);
+function handleProjectDetailed(Request $request, Database $db) 
+{
+    $sqlQuery = "SELECT tblProjects.project_id, tblProjects.description, tblProjects.manager,
+        tblProjects.location, tblResources.resource_type 
+        FROM tblProjects
+        INNER JOIN tblProjectResources ON tblProjects.project_id = tblProjectResources.project_id
+        INNER JOIN tblResources ON tblResources.resource_id = tblProjectResources.resource_id
+        WHERE tblProjects.project_id = ?";
+    
+    $queryParameters = $request->getQueryParameters();
+    validateQueryParameters($queryParameters, ["project_id"]);
 
-    if ($stmt === false) {
-        throw new ClientError(sqlsrv_errors(), 404);
-    };
-
-    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
-        $data[] = $row;
-    }
-
-    sqlsrv_free_stmt($stmt);
-    sqlsrv_close($dbConnection);
+    // Convert the Project ID into an array to be used as a parameter.
+    $projectID = [$queryParameters["project_id"]];    
+    $data = $db->executeSQL($sqlQuery, $projectID);
 
     return $data;
 }
@@ -214,6 +204,12 @@ function handlePointsOfInterest()
 // Handle routing different requests
 //$backendApiKey = new ApiKey("1234");
 $request = new Request();
+$database = new Database(
+    "citytourwebsite-wk10-workshop.database.windows.net, 1433",
+    "citytour",
+    "w23027648",
+    "CandBtorture2122"
+);
 
 // Validate the API Key given to access the backend.
 //$backendApiKey->validateApiKey($request->getAllHttpHeaders());
@@ -232,11 +228,14 @@ try {
         case "weather_historical":
             $data = handleWeatherHistorical($request, $openWeatherApiKey);
             break;
-        case "air_pollution_current":   // TODO: For some reason, this is broken.
+        case "air_pollution_current":   // TODO: For some reason, this is broken. I don't think it is.
             $data = handlePollutionCurrent($request, $openWeatherApiKey);
             break;
-        case "points_of_interest":
-            $data = handlePointsOfInterest();
+        case "project-list":
+            $data = handleProjectList($database);
+            break;
+        case "project-detailed":
+            $data = handleProjectDetailed($request, $database);
             break;
         default:
             throw new ClientError("$endpointTarget", 404);

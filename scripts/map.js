@@ -7,8 +7,8 @@ function initMap() {
     const centreLatLgn = [54.97874064957384, -1.6100522109054864];
 
     // Initialise the map and assign it to the div titled "map" programmatically.
-    // A zoom of 14x is sufficient to view all projects at first glance.
-    const map = L.map("map").setView(centreLatLgn, 14);
+    // A zoom of 15x is sufficient to view all projects at first glance.
+    const map = L.map("map").setView(centreLatLgn, 15);
 
     // Ensure the map can actually load the tiles required to make up a single view (a map is based on several images - not just one)
     // Additionally, add the attribution tag to comply with OpenStreetMaps's license.
@@ -52,29 +52,28 @@ function initMap() {
     return map
 }
 
-function createMarker(pointOfInterest, map, markerGroup) {
-    const latlngArray = pointOfInterest.latlng.split(",");
+function createMarker(project, map, markerGroup) {
+    const geolocationArray = project.geolocation.split(",");
 
     // Remove the potential whitespaces from the co-ordinates and convert to integers.
-    const lat = parseFloat(latlngArray[0].trim());
-    const lng = parseFloat(latlngArray[1].trim());
+    const lat = parseFloat(geolocationArray[0].trim());
+    const lng = parseFloat(geolocationArray[1].trim());
     const markerPosition = [lat, lng];
 
     // Extract the Name and Description from the table using their <td> tags.
-    const poiName = pointOfInterest.name;
-    const poiDescription = pointOfInterest.description;
+    const projectName = project.title;
+    //const poiDescription = pointOfInterest.description;
 
     const marker = L.marker(markerPosition, {
-        title: poiName
+        title: projectName
     });
 
-    marker.bindTooltip(poiName);
+    marker.bindTooltip(projectName);
 
     // Format the infoWindowContent for a more aesthetic view.
     const infoWindowContent = `
     <div id=content>
-        <h1>${poiName}</h1>
-        <p>${poiDescription}</p>
+        <h1>${projectName}</h1>
     </div>    
     `;
 
@@ -86,48 +85,40 @@ function createMarker(pointOfInterest, map, markerGroup) {
     return marker;
 }
 
-/**
- * Removes all markers present on the map.
- */
-function clearAllMarkers(map, markerGroup) {
-    markerGroup.clearLayers();
-};
-
 async function initTableAndMarkers(map, markerGroup) {
-    const pointsOfInterest = document.getElementById("pois");
+    // Get the HTML tag that represents the table so it can be updated.
+    const projectsTable = document.getElementById("project-titles");
 
-    const response = await fetch(`api/api.php?type=points_of_interest`);
+    const response = await fetch(`api/api.php?type=project-list`);
     const data = await response.json();
 
     let tableRows = "";
-    data.forEach((poi) => {
+    data.forEach((project) => {
         // Add the row to the table.
         tableRows += `
-            <tr id="${poi.latlng}">
-                <td>${poi.name}</td>
-                <td>${poi.description}</td>
-                <td>${poi.latlng}</td>
+            <tr id="${project.project_id}">
+                <td>${project.title}</td>
             </tr>
         `
-
-        // Autmatically create a map marker from the data.
-        createMarker(poi, map, markerGroup);
+        // Automatically create a map marker from the data.
+        createMarker(project, map, markerGroup);
     });
 
-    pointsOfInterest.innerHTML = tableRows;
+    projectsTable.innerHTML = tableRows;
 
     // Add Marker on-click.
-    document.querySelectorAll("#pois tr").forEach(row => {
+    document.querySelectorAll("#project-titles tr").forEach(row => {
         row.addEventListener("click", function () {
-            // Retrieve the data from the table row and format it as an object to mimic the database-returned JSON.
-            const poiName = row.children[0].innerText;
-            poi = {
-                name: poiName,
-                description: row.children[1].innerText,
-                latlng: row.id
-            }
+            // Retrieve the data for the particular project from the database.
+            const response = await fetch(`api/api.php?type=project-detailed`);
+            const data = await response.json();
 
-            //createMarker(poi, map, markerGroup);
+            document.getElementById("project-manager") = // API call;
+            const projectDescription = document.getElementById("project-description");
+            const projectLocation = document.getElementById("project-location");
+            const projectResources = document.getElementById("project-resource"); // For each, append the resources to get a list.
+
+            
 
             // Update the Weather for the selected area.
             const latlngArray = row.id.split(",");

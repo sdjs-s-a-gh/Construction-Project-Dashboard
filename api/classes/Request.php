@@ -35,7 +35,7 @@ class Request
     public function getEndpointTarget(): string 
     {
         $url = parse_url($_SERVER["REQUEST_URI"]);
-        $basepath = "/city-tour-website/combined/api/";    // TODO: Remember to update this basepath
+        $basepath = "/construction-project-dashboard/api/";    // TODO: Remember to update this basepath
         $endpoint = str_replace($basepath, "", $url["path"]);
 
         /** 

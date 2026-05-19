@@ -1,99 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-UK">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Newcastle City Tour</title>
-    <!-- Link to the overarching CSS stylesheet for the webpages pages -->
-    <link rel="stylesheet" type="text/css" href="styles/style.css">
-    <!--Import the leaflet JS and accompanying CSS code to ensure the map displays properly -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <title>Construction Project Dashboard</title>
+        <!-- Link to the overarching CSS stylesheet for the webpages pages -->
+        <link rel="stylesheet" type="text/css" href="styles/style.css">
+        <!--Import the leaflet JS and accompanying CSS code to ensure the map displays properly -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script defer src="scripts/map.js"></script>
-    <script defer src="scripts/weather_data.js"></script>
+        <script defer src="scripts/map.js"></script>
+        <script defer src="scripts/weather_data.js"></script>
 
-    <!-- TODO: Need to reference this date/time converter script-->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/4.1.0/cdn.min.js"></script>
-</head>
+        <!-- TODO: Need to reference this date/time converter script-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/4.1.0/cdn.min.js"></script>
+    </head>
 
-<body>
-    <header>
-        <h1>Newcastle City Tour</h1>
-    </header>
-    <main>
-        <section>
-            <div id="map"></div>
-        </section>
+    <body>
+        <header>
+            <h1>Construction Projects</h1>
+        </header>
+        <nav>
+            <ul>
+                <li><a href="#">Project Dashboard</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+        <main>
+            <h2>Project Dashboard</h2>
+            <p>Please select a Project from the table below or the map to explore the details further details. </p>
 
-        <section>
-            <button id="btn-clear-markers">Clear All Markers</button>
-        </section>
+            <!-- The Section responsible for handling both the table of projects and the map -->
+            <section id="dashboard">
+                <div id="project-table">
+                    <table>
+                        <tr>
+                            <th>Project Title</th>
+                        </tr>
+                        <tbody id="project-titles"></tbody>
+                    </table>
+                </div>
 
-        <section>
-            <table>
-                <tr>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Geo-location</th>
-                </tr>
-                <tbody id="pois"></tbody>
-            </table>
-        </section>
+                <div id="map"></div>
+            </section>
 
-        <section>
-            <h2>Current Weather Data for: <span id="current-location">Map Centre</span></h2>
-            <p>Description: <span id="weather-description"></span></p>
-            <p>Temperature: <span id="weather-temp"></span>&deg;C</p>
-            <p>Humidity: <span id="weather-humidity"></span>%</p>
-            <p>Wind speed: <span id="weather-wind"></span>mph</p>
-        </section>
+            <!-- Details for a selected Project -->
+            <section id="project-details">
+                <p>Manager: <span id="project-manager"></span></p>
+                <p>Description: <span id="project-description"></span></p>
+                <p>Location: <span id="project-location"></span></p>
+                <p>Resources (Equipment Needed): <span id="project-resources"></span></p>
+            </section>
 
-        <section>
-            <h2> Pollution Data: </h2>
-            <!--Retrieve pollution data for today-->
-            <p>Air Quality Index (AQI): <span id="pollution-air-quality"></span></p>
-            <h3>Polluting Gases:</h3>
-            <p>Carbon Monoxide: <span id="pollution-carbon-monixide"></span></p>
-            <p>Nitrogen Monoxide: <span id="pollution-nitrogen-monoxide"></span></p>
-            <p>Nitrogen Dioxide: <span id="pollution-nitrogen-dioxide"></span></p>
-            <p>Ozone: <span id="pollution-ozone"></span></p>
-            <p>Sulphur Dioxide: <span id="pollution-sulphur-dioxide"></span></p>
-            <p>Ammonia: <span id="pollution-ammonia"></span></p>
-        </section>
+            <!-- Specific environmental information about a selected Project -->
+            <section id="environment-overview">
+                <div id="weather-related">
+                    <p>Description: <span id="weather-description"></span></p>
+                    <p>Temperature: <span id="weather-temp"></span>&deg;C</p>
+                    <p>Humidity: <span id="weather-humidity"></span>%</p>
+                    <p>Wind speed: <span id="weather-wind"></span>mph</p>
+                </div>
 
-        <section>
-            <h2>Historical Data: </h2>
-            <form>
-                <label for="start-date">Start Date</label>
-                <input type="date" id="start-date" name="start-date">
+                <div id="pollution-related">
+                    <p>Air Quality Index (AQI): <span id="pollution-air-quality"></span></p>
+                    <h3>Polluting Gases:</h3>
+                    <p>Carbon Monoxide: <span id="pollution-carbon-monixide"></span></p>
+                    <p>Nitrogen Monoxide: <span id="pollution-nitrogen-monoxide"></span></p>
+                    <p>Nitrogen Dioxide: <span id="pollution-nitrogen-dioxide"></span></p>
+                    <p>Ozone: <span id="pollution-ozone"></span></p>
+                    <p>Sulphur Dioxide: <span id="pollution-sulphur-dioxide"></span></p>
+                    <p>Ammonia: <span id="pollution-ammonia"></span></p>
+                </div>
+            </section>
 
-                <label for="end-date">End Date</label>
-                <input type="date" id="end-date" name="end-date">
+            <!-- A Section used for historical and future weather/air quality information -->
+            <section id="environment-analytics">
+                <form id="date-selection">
+                    <label for="start-date">Start Date</label>
+                    <input type="date" id="start-date" name="start-date">
 
-                <button id="btn-date"> Submit</button>
-            </form>
+                    <label for="end-date">End Date</label>
+                    <input type="date" id="end-date" name="end-date">
 
+                    <button id="btn-date"> Submit</button>
+                </form>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Weather Description</th>
-                        <th>Temperature (&deg;C)</th>
-                        <th>Wind Speed (mph)</th>
-                    </tr>
-                </thead>
-                <tbody id="historical-weather"></tbody>
-            </table>
-        </section>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Weather Description</th>
+                            <th>Temperature (&deg;C)</th>
+                            <th>Wind Speed (mph)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historical-weather"></tbody>
+                </table>
+            </section>
+        </main>
 
-    </main>
-
-    <footer>
-        <p>©Copyright until 2050. Scott Berston. All rights reserved. Leave Immediately.</p>
-    </footer>
-
-</body>
-
+        <footer>
+            <p>©Copyright until 2050. Scott Berston. All rights reserved. Leave Immediately.</p>
+        </footer>
+    </body>
 </html>
