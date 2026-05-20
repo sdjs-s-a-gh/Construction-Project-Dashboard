@@ -23,40 +23,8 @@ function initMap() {
     // Additionally, add the attribution tag to comply with OpenStreetMaps's license.
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {
-            attribution: "&copy; OpenStreetMap contributors"
-        }
+        {attribution: "&copy; OpenStreetMap contributors"}
     ).addTo(map);
-
-    // Add a marker to the map on the centred coordinates.
-    const marker = L.marker(centreLatLgn).addTo(map);
-
-    // Add a popup to the marker
-    marker.bindTooltip("Northumbria University");
-
-    marker.on("click", function () {
-        console.log("Marker was clicked.");
-    });
-
-    map.on("move", function () {
-        console.log("Centre was moved.");
-    });
-
-    // Create some dummy HTML content for a marker
-    const content = `
-    <div id=content>
-    <h1>Northumbria University</h1>
-    <p>
-        At the Heart of Newcastle City Centre, Northumbria is a vibrant hub of innovation, learning and student life.
-        It offers a wide range of modern facilities, cutting-edge research opportunities and a dynamic campus environment. The university
-        is known for its strong links to university, providing sudents with valuable real-world experience alongside their studies. WIth a
-         a diverse student community and focus on career readiness, it supports learners in developing both academically and professionally.
-         Located in one of the UK's most lively student cities, Northumbria combines high-quality education with an exciting social scene,
-         making it a popular choice for students from around the world.
-    </p>
-    `
-    // Add a popup to the marker
-    marker.bindPopup(content)
 
     return map
 }

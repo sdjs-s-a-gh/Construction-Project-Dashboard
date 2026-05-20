@@ -198,10 +198,6 @@ async function handleDateSelection() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    getCurrentWeather(latitude, longitude);
-    getCurrentPollutionData(latitude, longitude);
-    getHistoricalWeatherData(latitude, longitude);    
-
     document.getElementById("btn-date").addEventListener(
         "click",
         handleDateSelection
