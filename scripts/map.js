@@ -114,7 +114,8 @@ async function initTableAndMarkers(map, markerGroup) {
  * @param {string} geolocation The Latitude and Longitude co-ordinates for the project.
  */
 async function updateProjectDetails(projectID, title, geolocation) {
-    document.getElementById("project-selected").innerHTML = `Project Selected: ${title}`;
+    const selectedProject = document.getElementById("project-selected");
+    selectedProject.innerHTML = `Project Selected: ${title}`;
 
     // Retrieve the data for the particular project from the database.
     const response = await fetch(`api/api.php?type=project-detailed&project_id=${projectID}`);
@@ -138,6 +139,9 @@ async function updateProjectDetails(projectID, title, geolocation) {
     // Remove the potential whitespaces from the co-ordinates and convert to integers.
     const lat = parseFloat(latlngArray[0].trim());
     const lng = parseFloat(latlngArray[1].trim());
+    
+    selectedProject.dataset.latitude = lat;
+    selectedProject.dataset.longitude = lng;
 
     const [weatherDescription, windSpeed, weatherID] = await getCurrentWeather(lat, lng);
     const airQuality = await getCurrentPollutionData(lat, lng);

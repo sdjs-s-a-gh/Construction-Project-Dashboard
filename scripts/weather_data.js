@@ -122,36 +122,51 @@ async function getCurrentPollutionData(latitude, longitude) {
 }
 
 function displayHistoricalData(weatherData, pollutionData) {
-    // Combine both the weather and pollution data into one by aligning their respective indexes.
-    // Both sets of data are ordered by date and time in the same granularity, so the times will match when combining.
-    const combinedData = weatherData.list.map((weatherElement, index) => {
-        return {
-            weather: weatherElement,
-            pollution: pollutionData.list[index]
-        };
-    });
-
-    console.log(combinedData);
-    const historicalData = document.getElementById("historical-data");
-    // Get every object in the data.list parent object.
+    const historicalWeather = document.getElementById("historical-weather");
+    const historicalPollution = document.getElementById("historical-pollution");
 
     let tableRows = "";
-    combinedData.forEach((element) => {
-        const weather = element.weather;
-        const pollution = element.pollution
+    let dates = new Set();
+    console.log(weatherData)
+    weatherData.list.forEach((element) => {
         // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(weather.dt * 1000), "dd/MM/yyyy HH:mm");
+        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy HH:mm");
         tableRows += `
             <tr>
                 <td>${dateTime}</td>
-                <td>${formatWeatherDescription(weather.weather[0].description, weather.weather[0].id)}</td>
-                <td>${weather.main.temp}</td>
-                <td>${weather.wind.speed}</td>
-                <td>${formatAirQuality(pollution.main.aqi)}
+                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
+                <td>${element.main.temp}</td>
+                <td>${element.wind.speed}</td>
             </tr>
         `
+        dates.add(dateTime);
     });
-    historicalData.innerHTML = tableRows;
+
+    historicalWeather.innerHTML = tableRows;
+
+    tableRows = "";
+    let dates2 = new Set();
+    console.log(pollutionData)
+    pollutionData.list.forEach((element) => {
+        // Convert the date/time from the JSON into a more readable format.
+        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy HH:mm");
+        tableRows += `
+            <tr>
+                <td>${dateTime}</td>
+                <td>${formatAirQuality(element.main.aqi)}</td>
+                <td>${element.components.co}</td>
+                <td>${element.components.no2}</td>
+            </tr>
+        `
+
+        dates2.add(dateTime);
+    });
+
+    historicalPollution.innerHTML = tableRows;
+
+    console.log(dates);
+    console.log(dates2);
+    console.log(dates.difference(dates2))
 }
 
 /**
@@ -184,7 +199,7 @@ async function getFutureWeatherData(latitude, longitude) {
     weatherData.list.forEach((element) => {
         // Convert the date/time from the JSON into a more readable format.
         dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
-        
+
         tableRows += `
             <tr>
                 <td>${dateTime}</td>
@@ -235,10 +250,14 @@ async function getFuturePollutionData(latitude, longitude) {
     futurePollutionData.innerHTML = tableRows;
 }
 
-// TODO: Fix this function so that it can actually get the current geolocation
+
 async function handleDateSelection() {
     // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
     event.preventDefault();
+
+    const selectedProject = document.getElementById("project-selected")
+    const latitude = selectedProject.dataset.latitude;
+    const longitude = selectedProject.dataset.longitude;
 
     // Get the date values from HTML.
     const startHTMLValue = document.getElementById("start-date").value;
@@ -270,6 +289,9 @@ async function handleDateSelection() {
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
     const [weatherData, pollutionData] = await response.json();
 
+    console.log(weatherData);
+    console.log(pollutionData);
+
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
     if (response.status == 400) {
         alert("Bad request. Please change the dates entered.")
@@ -278,7 +300,7 @@ async function handleDateSelection() {
         alert("Error with the latitude and longitude.") // TODO
     }
 
-    displayHistoricalData(data);
+    displayHistoricalData(weatherData, pollutionData);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
