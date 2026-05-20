@@ -238,7 +238,7 @@ async function getFuturePollutionData(latitude, longitude) {
         // Advance the date forward.
         lastDay = dateTime;
         tableRows += `
-            <tr>
+            <tr id=${element.dt}>
                 <td>${dateTime}</td>
                 <td>${formatAirQuality(element.main.aqi)}</td>
                 <td>${element.components.co}</td>
@@ -303,11 +303,80 @@ async function handleDateSelection() {
     displayHistoricalData(weatherData, pollutionData);
 }
 
+async function handlePollutionSelection() {
+    // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
+    event.preventDefault();
+
+    // Get the date values from HTML.
+    const forecastDateHTML = document.getElementById("future-pollution-date").value;
+    const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
+
+    // Since all the data is already displayed (because the Pollution API doesn't let you choose the number of days to forecast), remove the days out of range in the table.
+    document.querySelectorAll("#future-pollution-data tr").forEach(row => {
+        // Get the date of the cell to check whether it needs to be hidden.
+        const dateCell = row.id;
+
+        if (dateCell > forecastDate) {
+            row.style.display = "none";
+        }
+    });
+}
+
+async function handleFutureWeatherSelection() {
+    const selectedProject = document.getElementById("project-selected")
+    const latitude = selectedProject.dataset.latitude;
+    const longitude = selectedProject.dataset.longitude;
+
+    // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
+    event.preventDefault();
+
+    // Get the date values from HTML.
+    const forecastDateHTML = document.getElementById("future-weather-date").value;
+    const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
+    const currentDate = Math.floor(new Date().getTime() / 1000);
+    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
+
+    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${differenceInDays}`);
+    const weatherData = await response.json();
+
+    console.log(weatherData);
+
+    const futureWeatherData = document.getElementById("future-weather-data");
+
+    let tableRows = "";
+    weatherData.list.forEach((element) => {
+        // Convert the date/time from the JSON into a more readable format.
+        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
+
+        tableRows += `
+            <tr>
+                <td>${dateTime}</td>
+                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
+                <td>${element.temp.min}</td>
+                <td>${element.temp.max}</td>
+                <td>${element.speed}</td>
+            </tr>
+        `
+    });
+
+    futureWeatherData.innerHTML = tableRows;
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("btn-date").addEventListener(
+    document.getElementById("btn-historical-date").addEventListener(
         "click",
         handleDateSelection
     )
+    document.getElementById("btn-future-pollution-date").addEventListener(
+        "click",
+        handlePollutionSelection
+    )
+    document.getElementById("btn-future-weather-date").addEventListener(
+        "click",
+        handleFutureWeatherSelection
+    )
+
 })
 
 

@@ -81,6 +81,7 @@
         <!-- A Section used for historical and future weather/air quality information -->
         <section id="environment-analytics">
             <div id="historical">
+                <h2>Historical Data</h2>
                 <form id="date-selection">
                     <label for="start-date">Start Date</label>
                     <input type="date" id="start-date" name="start-date">
@@ -88,7 +89,7 @@
                     <label for="end-date">End Date</label>
                     <input type="date" id="end-date" name="end-date">
 
-                    <button id="btn-date"> Submit</button>
+                    <button id="btn-historical-date"> Submit</button>
                 </form>
 
                 <table>
@@ -101,6 +102,8 @@
                         </tr>
                     </thead>
                     <tbody id="historical-weather"></tbody>
+                </table>
+                <table>
                     <thead>
                         <tr>
                             <th>Time</th>
@@ -114,29 +117,46 @@
             </div>
 
             <div id="future">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Air Quality Index (AQI)</th>
-                            <th>Carbon Monoxide</th>
-                            <th>Nitrogen Dioxide</th>
-                        </tr>
-                    </thead>
-                    <tbody id="future-pollution-data"></tbody>
-                </table>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Weather Description</th>
-                            <th>Min Temperature (&deg;C)</th>
-                            <th>Max Temperature (&deg;C)</th>
-                            <th>Wind Speed (mph)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="future-weather-data"></tbody>
-                </table>
+                <h2>Future Data</h2>
+                <div>
+                    <form id="date-selection">
+                        <label for="future-pollution-date">Days</label>
+                        <input type="date" id="future-pollution-date" name="future-pollution-date">
+                        <button id="btn-future-pollution-date"> Submit</button>
+                    </form>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Air Quality Index (AQI)</th>
+                                <th>Carbon Monoxide</th>
+                                <th>Nitrogen Dioxide</th>
+                            </tr>
+                        </thead>
+                        <tbody id="future-pollution-data"></tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <form id="date-selection">
+                        <label for="future-weather-date">Days</label>
+                        <input type="date" id="future-weather-date" name="future-weather-date">
+                        <button id="btn-future-weather-date"> Submit</button>
+                    </form>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Weather Description</th>
+                                <th>Min Temperature (&deg;C)</th>
+                                <th>Max Temperature (&deg;C)</th>
+                                <th>Wind Speed (mph)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="future-weather-data"></tbody>
+                    </table>
+                </div>
+
             </div>
         </section>
     </main>
