@@ -117,14 +117,14 @@ async function updateProjectDetails(projectID, title, geolocation) {
     document.getElementById("project-manager").innerHTML = data[0].manager;
     document.getElementById("project-description").innerHTML = data[0].description;
     document.getElementById("project-location").innerHTML = data[0].location;
-    const projectResources = document.getElementById("project-resources"); // For each, append the resources to get a list.
+    const projectResourcesHTML = document.getElementById("project-resources"); // For each, append the resources to get a list.
 
-    let resources = [];
+    let projectResources = [];
     data.forEach(projectInstance => {
-        resources.push(projectInstance.resource_type);
+        projectResources.push(projectInstance.resource_type);
     })
 
-    projectResources.innerHTML = resources;
+    projectResourcesHTML.innerHTML = projectResources;
 
     // Update the Weather for the selected area.
     const latlngArray = geolocation.split(",");
@@ -135,26 +135,89 @@ async function updateProjectDetails(projectID, title, geolocation) {
 
     const [weatherDescription, windSpeed, weatherID] = await getCurrentWeather(lat, lng);
     const airQuality = await getCurrentPollutionData(lat, lng);
-
     const isHighWind = windSpeed > 20;
+
+    // Set the bad weather to the weather codes that represent "heavy intensity rain", "very heavy rain",
+    // "extreme rain" and "heavy intensity shower rain". Codes taken from https://openweathermap.org/api/weather-conditions#Weather-Condition-Codes-2 
     const isBadWeather = weatherID === 502 || weatherID === 503 || weatherID === 504 || weatherID === 522;
     const isPoorAirQuality = airQuality > 2;
 
-    // 502, 503, 504, 522
+    // An object of resource rules to iterate through more cleanly.
+    const resourceRules = {
+        "Crane": {
+            highWind: true
+        },
+        "Drill": {
+            heavyRain: true
+        },
+        "Dumper Truck": {
+            heavyRain: true,
+            poorAirQuality: true
+        },
+        "Digger": {
+            heavyRain: true,
+            poorAirQuality: true
+        },
+        "Loader": {
+            heavyRain: true,
+            poorAirQuality: true
+        },
+        "Concrete Mixer": {
+            heavyRain: true
+        }
+    }
 
-    if (resources.includes("Crane") && isHighWind) {
-        console.log(`Work is recommended to be ceased since the project requires a crane and the current
-            windspeed (${windSpeed}) exceeds 20mph.`);
-    };
+    // earthMovingEquipment = ["Dumper Truck", "Digger", "Loader"]
+    // nonEarthMovingEquipment = ["Drill", "Concrete Mixer"]
+    // for resource in projectResources:
+    //  rules = resourceRules[resource]:
+    //  if highWind in rules AND isHighWind:
+    //      flag highWind
+    //  if badWeather in rules and isBadWeather:
+    //      flag badWeather
+    //  if poorAirQuality in rules and isPoorAirQuality:
+    //  flag poorAirQuality
+    // end for
+    //
+    // if !(highWind or badWeather or poorAirQuality):
+    //  "Everything is good to go"
 
-    if (resources.includes("Dumper Truck") && isBadWeather) {
-        console.log(`Work is recommended to be delayed due to rainfall.`);
-    };
+    // Booleans to represent which conditions should be displayed back to the user.
+    let highWindMsg = false;
+    let heavyRainMsg = false;
+    let poorAirQualityMsg = false;
 
-    if (resources.includes("Dumper Truck") && isPoorAirQuality) {
-        console.log(`Work is recommended to be ceased for any earth-moving equipment since the air quality
-             is too low (${airQuality}).`);
-    };
+    projectResources.forEach(resource => {
+        const rules = resourceRules[resource];
+
+        if (rules?.highWind && isHighWind) {
+            highWindMsg = true;
+        }
+
+        if (rules?.heavyRain && isBadWeather) {
+            heavyRainMsg = true;
+        }
+
+        if (rules?.poorAirQuality && isPoorAirQuality) {
+            poorAirQualityMsg = true;
+        }
+    })
+
+    if (highWindMsg) {
+        console.log(`Work with the crane recommended to be ceased since and the current windspeed (${windSpeed}) exceeds 20mph.`)
+    }
+
+    if (heavyRainMsg) {
+        console.log(`Work is recommended to be delayed with the earth-moving equipment, drills and concrete mixer due to rainfall.`);
+    }
+
+    if (poorAirQualityMsg) {
+        console.log(`Work is recommended to be ceased for any earth-moving equipment since the air quality is too low (${airQuality}).`);
+    }
+
+    if (!(highWindMsg || heavyRainMsg || poorAirQualityMsg)) {
+        console.log("All work can proceed.")
+    }
 
     getHistoricalWeatherData(lat, lng);
 }
