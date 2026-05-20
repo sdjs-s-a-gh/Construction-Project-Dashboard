@@ -1,6 +1,15 @@
-function getWeatherData(latitude, longitude) {
-    console.log(`lat: ${latitude}, lng: ${longitude}`)
-}
+addEventListener("DOMContentLoaded", () => {
+    const map = initMap();
+    const markerGroup = L.layerGroup().addTo(map);
+    initTableAndMarkers(map, markerGroup);
+
+    // TODO: Decide if I want to keep this code and add the ability to clear markers later.
+    // document.getElementById("btn-clear-markers").addEventListener(
+    //     "click", function () {
+    //         clearAllMarkers(map, markerGroup);
+    //     }
+    // )
+});
 
 function initMap() {
     // Set the coordinates for a certain place
@@ -70,6 +79,7 @@ function createMarker(project, map, markerGroup) {
 
     marker.bindTooltip(projectName);
 
+    // TODO: Add more information to this pop-up
     // Format the infoWindowContent for a more aesthetic view.
     const infoWindowContent = `
     <div id=content>
@@ -82,6 +92,10 @@ function createMarker(project, map, markerGroup) {
     // Append the marker to the current list.
     markerGroup.addLayer(marker);
 
+    marker.on("click", function () {
+        updateProjectDetails(project.project_id, projectName, project.geolocation);
+    });
+   
     return marker;
 }
 
@@ -96,7 +110,7 @@ async function initTableAndMarkers(map, markerGroup) {
     data.forEach((project) => {
         // Add the row to the table.
         tableRows += `
-            <tr id="${project.project_id}">
+            <tr id="${project.project_id}" data-geolocation="${project.geolocation}">
                 <td>${project.title}</td>
             </tr>
         `
@@ -106,45 +120,52 @@ async function initTableAndMarkers(map, markerGroup) {
 
     projectsTable.innerHTML = tableRows;
 
-    // Add Marker on-click.
+    // Retrieve more information about a project on-click.
     document.querySelectorAll("#project-titles tr").forEach(row => {
         row.addEventListener("click", function () {
-            // Retrieve the data for the particular project from the database.
-            const response = await fetch(`api/api.php?type=project-detailed`);
-            const data = await response.json();
-
-            document.getElementById("project-manager") = // API call;
-            const projectDescription = document.getElementById("project-description");
-            const projectLocation = document.getElementById("project-location");
-            const projectResources = document.getElementById("project-resource"); // For each, append the resources to get a list.
-
-            
-
-            // Update the Weather for the selected area.
-            const latlngArray = row.id.split(",");
-
-            // Remove the potential whitespaces from the co-ordinates and convert to integers.
-            const lat = parseFloat(latlngArray[0].trim());
-            const lng = parseFloat(latlngArray[1].trim());
-
-            getCurrentWeather(lat, lng);
-            getCurrentPollutionData(lat, lng);
-            getHistoricalWeatherData(lat, lng);
-
+            projectID = row.id;
+            projectTitle = row.children[0].innerHTML;
+            projectGeolocation = row.dataset.geolocation;
+            updateProjectDetails(projectID, projectTitle, projectGeolocation);
             // Update the Current Location
-            document.getElementById("current-location").innerHTML = `${poiName}`;
+            // document.getElementById("current-location").innerHTML = `${poiName}`;
         })
     })
 }
 
-addEventListener("DOMContentLoaded", () => {
-    const map = initMap();
-    const markerGroup = L.layerGroup().addTo(map);
-    initTableAndMarkers(map, markerGroup);
+/**
+ * Updates the HTML that holds information about a Project's Details.
+ * 
+ * @param {int} projectID The ID for the project to fetch information about.
+ * @param {string} title The title for the project.
+ * @param {string} geolocation The Latitude and Longitude co-ordinates for the project.
+ */
+async function updateProjectDetails(projectID, title, geolocation) {
+    document.getElementById("project-selected").innerHTML = `Project Selected: ${title}`;
+    // Retrieve the data for the particular project from the database.
+    const response = await fetch(`api/api.php?type=project-detailed&project_id=${projectID}`);
+    const data = await response.json();
 
-    document.getElementById("btn-clear-markers").addEventListener(
-        "click", function () {
-            clearAllMarkers(map, markerGroup);
-        }
-    )
-});
+    document.getElementById("project-manager").innerHTML = data[0].manager;
+    document.getElementById("project-description").innerHTML = data[0].description;
+    document.getElementById("project-location").innerHTML = data[0].location;
+    const projectResources = document.getElementById("project-resources"); // For each, append the resources to get a list.
+
+    let resources = [];
+    data.forEach(projectInstance => {
+        resources.push(projectInstance.resource_type);
+    })
+
+    projectResources.innerHTML = resources;
+
+    // Update the Weather for the selected area.
+    const latlngArray = geolocation.split(",");
+
+    // Remove the potential whitespaces from the co-ordinates and convert to integers.
+    const lat = parseFloat(latlngArray[0].trim());
+    const lng = parseFloat(latlngArray[1].trim());
+
+    getCurrentWeather(lat, lng);
+    getCurrentPollutionData(lat, lng);
+    getHistoricalWeatherData(lat, lng);
+}
