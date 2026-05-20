@@ -221,5 +221,6 @@ async function updateProjectDetails(projectID, title, geolocation) {
     document.getElementById("project-status").innerHTML = recommendation;
 
     getHistoricalEnvironmentData(lat, lng);
-    getFutureEnvironmentData(lat, lng);
+    getFutureWeatherData(lat, lng);
+    getFuturePollutionData(lat, lng);
 }

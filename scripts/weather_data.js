@@ -172,19 +172,19 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
     displayHistoricalData(weatherData, pollutionData);
 }
 
-async function getFutureEnvironmentData(latitude, longitude) {
+async function getFutureWeatherData(latitude, longitude) {
     const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=4`);
     const weatherData = await response.json();
 
     console.log(weatherData);
 
     const futureWeatherData = document.getElementById("future-weather-data");
-    // Get every object in the data.list parent object.
 
     let tableRows = "";
     weatherData.list.forEach((element) => {
         // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy HH:mm");
+        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
+        
         tableRows += `
             <tr>
                 <td>${dateTime}</td>
@@ -197,6 +197,42 @@ async function getFutureEnvironmentData(latitude, longitude) {
     });
 
     futureWeatherData.innerHTML = tableRows;
+}
+
+async function getFuturePollutionData(latitude, longitude) {
+    const response = await fetch(`api/api.php?type=pollution_future&latitude=${latitude}&longitude=${longitude}`);
+    const pollutionData = await response.json();
+
+    console.log(pollutionData);
+
+    const futurePollutionData = document.getElementById("future-pollution-data");
+    // Get every object in the data.list parent object.
+
+    let tableRows = "";
+    let lastDay = "";
+
+    const now = dateFns.format(new Date(), "dd/MM/yyyy")
+    pollutionData.list.forEach((element) => {
+        // Ignore today's date since that isn't
+        // Convert the date/time from the JSON into a more readable format.
+        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
+
+        // Since the API is hourly and there is no way to change it, ignore instances of the same day.
+        if (dateTime === lastDay) return;
+
+        // Advance the date forward.
+        lastDay = dateTime;
+        tableRows += `
+            <tr>
+                <td>${dateTime}</td>
+                <td>${formatAirQuality(element.main.aqi)}</td>
+                <td>${element.components.co}</td>
+                <td>${element.components.no2}</td>
+            </tr>
+        `
+    });
+
+    futurePollutionData.innerHTML = tableRows;
 }
 
 // TODO: Fix this function so that it can actually get the current geolocation

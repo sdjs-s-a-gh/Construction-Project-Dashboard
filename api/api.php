@@ -201,6 +201,28 @@ function handleWeatherFuture(Request $request, string $apiKey)
     return $response;
 }
 
+function handlePollutionFuture(Request $request, string $apiKey)
+{
+    $queryParameters = $request->getQueryParameters();
+    validateQueryParameters($queryParameters, ["latitude", "longitude"]);
+
+    $latitude = $queryParameters["latitude"];
+    $longitude = $queryParameters["longitude"];
+
+    $url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=$latitude&lon=$longitude&cnt=$days&units=metric&appid=$apiKey";
+
+    $options = [
+        "http" => [
+            "ignore_errors" => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
+    $response = json_decode($response, true);
+
+    return $response;
+}
 
 /**
  * Returns the list of projects from the cloud database with sufficient data for a table.
@@ -264,6 +286,9 @@ try {
             break;
         case "weather_future":
             $data = handleWeatherFuture($request, $openWeatherApiKey);
+            break;
+        case "pollution_future":
+            $data = handlePollutionFuture($request, $openWeatherApiKey);
             break;
         case "project-list":
             $data = handleProjectList($database);
