@@ -115,6 +115,7 @@ async function initTableAndMarkers(map, markerGroup) {
  */
 async function updateProjectDetails(projectID, title, geolocation) {
     document.getElementById("project-selected").innerHTML = `Project Selected: ${title}`;
+
     // Retrieve the data for the particular project from the database.
     const response = await fetch(`api/api.php?type=project-detailed&project_id=${projectID}`);
     const data = await response.json();
@@ -196,20 +197,25 @@ async function updateProjectDetails(projectID, title, geolocation) {
 
     // Update the recommendations tag to show the user which equipment cannot be used.
     let recommendation = "";
+    let alternativeRecommendation = "";
     if (highWindMsg) {
-        recommendation += `Work with the crane is recommended to be ceased since the current windspeed (${windSpeed}) exceeds 20mph.`
+        recommendation += `Work with the crane is recommended to be ceased since the current windspeed (${windSpeed}mph) exceeds 20mph.<br>`
     }
 
     if (heavyRainMsg) {
-        recommendation += `Work is recommended to be delayed with any earth-moving equipment, drills and concrete mixers due to rainfall.`;
+        recommendation += `Work is recommended to be delayed with any earth-moving equipment, drills and concrete mixers due to current rainfall ${weatherDescription}.<br>`;
     }
 
     if (poorAirQualityMsg) {
-        recommendation += `Work is recommended to be ceased for any earth-moving equipment since the air quality is too low (${airQuality}).`;
+        recommendation += `Work is recommended to be ceased for any earth-moving equipment since the air quality is too low (${airQuality}).<br>`;
+    } else {
+        alternativeRecommendation = `Work using any earth-moving equipment may be used as the air quality is sufficient ${airQuality} <br>`
     }
 
     if (!(highWindMsg || heavyRainMsg || poorAirQualityMsg)) {
-        recommendation += "All work may proceed as the weather, wind speed and air quality are all sufficient."
+        recommendation = "All work may proceed."
+    } else if (!poorAirQualityMsg && !heavyRainMsg) {
+        recommendation += alternativeRecommendation;
     }
 
     document.getElementById("project-status").innerHTML = recommendation;
