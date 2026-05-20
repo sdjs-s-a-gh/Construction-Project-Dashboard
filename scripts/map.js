@@ -133,7 +133,21 @@ async function updateProjectDetails(projectID, title, geolocation) {
     const lat = parseFloat(latlngArray[0].trim());
     const lng = parseFloat(latlngArray[1].trim());
 
-    getCurrentWeather(lat, lng);
-    getCurrentPollutionData(lat, lng);
+    let windSpeed = 0;
+    let weatherDescription = "";
+    weatherDescription, windSpeed = await getCurrentWeather(lat, lng);
+    airQuality = await getCurrentPollutionData(lat, lng);
+
+    isHighWind = windSpeed > 20;
+    isBadWeather = "";
+    isPoorAirQuality = airQuality > 2;
+
+    if (isHighWind) {
+        console.log(`Wind speed is high: ${windSpeed}`);
+    } else {
+        console.log(`Wind speed is low: ${windSpeed}`);
+    };
+
+    
     getHistoricalWeatherData(lat, lng);
 }

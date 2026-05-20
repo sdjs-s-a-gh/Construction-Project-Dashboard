@@ -12,10 +12,6 @@ const ozone = document.getElementById("pollution-ozone")
 const sulphurDioxide = document.getElementById("pollution-sulphur-dioxide")
 const ammonia = document.getElementById("pollution-ammonia")
 
-// Set the global variables
-const latitude = "54.987207731081455";
-const longitude = "-1.6191434467079253";
-
 /**
  * Returns the description of the weather with a corresponding visual icon.
  * 
@@ -64,13 +60,20 @@ async function getCurrentWeather(latitude, longitude) {
     const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
 
+    // Extract the data for the resource rules and to display to the screen.
+    description = data.weather[0].description;
+    temperature = data.main.temp;
+    windSpeed = data.wind.speed; 
+
     // Display the data into the HTML file for the relevant fields.
-    weatherDescription.innerHTML = formatWeatherDescription(data.weather[0].description, data.weather[0].id);
-    weatherTemp.innerText = data.main.temp;
-    weatherWind.innerText = data.wind.speed;
+    weatherDescription.innerHTML = formatWeatherDescription(description, data.weather[0].id);
+    weatherTemp.innerText = temperature;
+    weatherWind.innerText = windSpeed;
 
     // Additional details.
     weatherHumidity.innerText = data.main.humidity;
+
+    return description, windSpeed;
 }
 
 function formatAirQuality(airQualityIndex) {
@@ -97,7 +100,8 @@ async function getCurrentPollutionData(latitude, longitude) {
 
     console.log(data);
     // Display the CO2 data into the HTML file.
-    airQualityIndex.innerText = formatAirQuality(data.list[0].main.aqi);
+    airQuality = data.list[0].main.aqi;
+    airQualityIndex.innerText = formatAirQuality(airQuality);
     carbonMinoxide.innerText = data.list[0].components.co;
     ammonia.innerText = data.list[0].components.nh3;
     nitrogenMinoxide.innerText = data.list[0].components.no;
@@ -113,6 +117,7 @@ async function getCurrentPollutionData(latitude, longitude) {
     // will have to be made dynamic to avoid hardcoding multiple indexes.
     // TODO    
 
+    return airQuality;
 }
 
 function displayHistoricalData(data) {
