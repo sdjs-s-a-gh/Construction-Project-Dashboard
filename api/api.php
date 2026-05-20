@@ -174,6 +174,33 @@ function handlePollutionCurrent(Request $request, string $apiKey)
     return $response;
 }
 
+/**
+ * Returns the weather for up-to the next 8 days.
+ */
+function handleWeatherFuture(Request $request, string $apiKey)
+{
+    $queryParameters = $request->getQueryParameters();
+    validateQueryParameters($queryParameters, ["latitude", "longitude", "days"]);
+
+    $latitude = $queryParameters["latitude"];
+    $longitude = $queryParameters["longitude"];
+    $days = $queryParameters["days"];
+
+    $url = "https://api.openweathermap.org/data/2.5/forecast/daily?lat=$latitude&lon=$longitude&cnt=$days&units=metric&appid=$apiKey";
+
+    $options = [
+        "http" => [
+            "ignore_errors" => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
+    $response = json_decode($response, true);
+
+    return $response;
+}
+
 
 /**
  * Returns the list of projects from the cloud database with sufficient data for a table.
@@ -229,11 +256,14 @@ try {
         case "weather_current":
             $data = handleWeatherCurrent($request, $openWeatherApiKey);
             break;
+        case "air_pollution_current":   // TODO: For some reason, this is broken. I don't think it is.
+            $data = handlePollutionCurrent($request, $openWeatherApiKey);
+            break;
         case "environment_historical":
             $data = handleEnvironmentHistorical($request, $openWeatherApiKey);
             break;
-        case "air_pollution_current":   // TODO: For some reason, this is broken. I don't think it is.
-            $data = handlePollutionCurrent($request, $openWeatherApiKey);
+        case "weather_future":
+            $data = handleWeatherFuture($request, $openWeatherApiKey);
             break;
         case "project-list":
             $data = handleProjectList($database);

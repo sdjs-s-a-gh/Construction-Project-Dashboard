@@ -1,84 +1,86 @@
 <!DOCTYPE html>
 <html lang="en-UK">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width">
 
-        <title>Construction Project Dashboard</title>
-        <!-- Link to the overarching CSS stylesheet for the webpages pages -->
-        <link rel="stylesheet" type="text/css" href="styles/style.css">
-        <!--Import the leaflet JS and accompanying CSS code to ensure the map displays properly -->
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
 
-        <script defer src="scripts/map.js"></script>
-        <script defer src="scripts/weather_data.js"></script>
+    <title>Construction Project Dashboard</title>
+    <!-- Link to the overarching CSS stylesheet for the webpages pages -->
+    <link rel="stylesheet" type="text/css" href="styles/style.css">
+    <!--Import the leaflet JS and accompanying CSS code to ensure the map displays properly -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        <!-- TODO: Need to reference this date/time converter script-->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/4.1.0/cdn.min.js"></script>
-    </head>
+    <script defer src="scripts/map.js"></script>
+    <script defer src="scripts/weather_data.js"></script>
 
-    <body>
-        <header>
-            <h1>Construction Projects</h1>
-        </header>
-        <nav>
-            <ul>
-                <li><a href="#">Project Dashboard</a></li>
-                <li><a href="#">About</a></li>
-            </ul>
-        </nav>
-        <main>
-            <h2>Project Dashboard</h2>
-            <p>Please select a Project from the table below or the map to explore the details further details. </p>
+    <!-- TODO: Need to reference this date/time converter script-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/4.1.0/cdn.min.js"></script>
+</head>
 
-            <!-- The Section responsible for handling both the table of projects and the map -->
-            <section id="dashboard">
-                <div id="project-table">
-                    <table>
-                        <tr>
-                            <th>Project Title</th>
-                        </tr>
-                        <tbody id="project-titles"></tbody>
-                    </table>
-                </div>
+<body>
+    <header>
+        <h1>Construction Projects</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="#">Project Dashboard</a></li>
+            <li><a href="#">About</a></li>
+        </ul>
+    </nav>
+    <main>
+        <h2>Project Dashboard</h2>
+        <p>Please select a Project from the table below or the map to explore the details further details. </p>
 
-                <div id="map"></div>
-            </section>
+        <!-- The Section responsible for handling both the table of projects and the map -->
+        <section id="dashboard">
+            <div id="project-table">
+                <table>
+                    <tr>
+                        <th>Project Title</th>
+                    </tr>
+                    <tbody id="project-titles"></tbody>
+                </table>
+            </div>
 
-            <!-- Details for a selected Project -->
-            <section id="project-details">
-                <h2><span id="project-selected">No Project Selected</span></h2>
-                <p>Manager: <span id="project-manager"></span></p>
-                <p>Description: <span id="project-description"></span></p>
-                <p>Location: <span id="project-location"></span></p>
-                <p>Resources (Equipment Needed): <span id="project-resources"></span></p>
-                <p><span id="project-status"></span></p>
-            </section>
+            <div id="map"></div>
+        </section>
 
-            <!-- Specific environmental information about a selected Project -->
-            <section id="environment-overview">
-                <div id="weather-related">
-                    <p>Description: <span id="weather-description"></span></p>
-                    <p>Temperature: <span id="weather-temp"></span>&deg;C</p>
-                    <p>Humidity: <span id="weather-humidity"></span>%</p>
-                    <p>Wind speed: <span id="weather-wind"></span>mph</p>
-                </div>
+        <!-- Details for a selected Project -->
+        <section id="project-details">
+            <h2><span id="project-selected">No Project Selected</span></h2>
+            <p>Manager: <span id="project-manager"></span></p>
+            <p>Description: <span id="project-description"></span></p>
+            <p>Location: <span id="project-location"></span></p>
+            <p>Resources (Equipment Needed): <span id="project-resources"></span></p>
+            <p><span id="project-status"></span></p>
+        </section>
 
-                <div id="pollution-related">
-                    <p>Air Quality Index (AQI): <span id="pollution-air-quality"></span></p>
-                    <h3>Polluting Gases:</h3>
-                    <p>Carbon Monoxide: <span id="pollution-carbon-monixide"></span></p>
-                    <p>Nitrogen Monoxide: <span id="pollution-nitrogen-monoxide"></span></p>
-                    <p>Nitrogen Dioxide: <span id="pollution-nitrogen-dioxide"></span></p>
-                    <p>Ozone: <span id="pollution-ozone"></span></p>
-                    <p>Sulphur Dioxide: <span id="pollution-sulphur-dioxide"></span></p>
-                    <p>Ammonia: <span id="pollution-ammonia"></span></p>
-                </div>
-            </section>
+        <!-- Specific environmental information about a selected Project -->
+        <section id="environment-overview">
+            <div id="weather-related">
+                <p>Description: <span id="weather-description"></span></p>
+                <p>Temperature: <span id="weather-temp"></span>&deg;C</p>
+                <p>Humidity: <span id="weather-humidity"></span>%</p>
+                <p>Wind speed: <span id="weather-wind"></span>mph</p>
+            </div>
 
-            <!-- A Section used for historical and future weather/air quality information -->
-            <section id="environment-analytics">
+            <div id="pollution-related">
+                <p>Air Quality Index (AQI): <span id="pollution-air-quality"></span></p>
+                <h3>Polluting Gases:</h3>
+                <p>Carbon Monoxide: <span id="pollution-carbon-monixide"></span></p>
+                <p>Nitrogen Monoxide: <span id="pollution-nitrogen-monoxide"></span></p>
+                <p>Nitrogen Dioxide: <span id="pollution-nitrogen-dioxide"></span></p>
+                <p>Ozone: <span id="pollution-ozone"></span></p>
+                <p>Sulphur Dioxide: <span id="pollution-sulphur-dioxide"></span></p>
+                <p>Ammonia: <span id="pollution-ammonia"></span></p>
+            </div>
+        </section>
+
+        <!-- A Section used for historical and future weather/air quality information -->
+        <section id="environment-analytics">
+            <div id="historical">
                 <form id="date-selection">
                     <label for="start-date">Start Date</label>
                     <input type="date" id="start-date" name="start-date">
@@ -101,11 +103,28 @@
                     </thead>
                     <tbody id="historical-data"></tbody>
                 </table>
-            </section>
-        </main>
+            </div>
 
-        <footer>
-            <p>©Copyright until 2050. Scott Berston. All rights reserved. Leave Immediately.</p>
-        </footer>
-    </body>
+            <div id="future">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Weather Description</th>
+                            <th>Min Temperature (&deg;C)</th>
+                            <th>Max Temperature (&deg;C)</th>
+                            <th>Wind Speed (mph)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="future-weather-data"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>©Copyright until 2050. Scott Berston. All rights reserved. Leave Immediately.</p>
+    </footer>
+</body>
+
 </html>
