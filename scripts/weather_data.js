@@ -38,7 +38,7 @@ function formatWeatherDescription(weatherDescription, weatherID) {
         icon = "9728"; // Clear Skies
     } else if (weatherID == 801) {
         icon = "9925"; // Few clouds
-    }  else {
+    } else {
         const iconDictionary = {
             2: "9928", // Thunderstorm,
             3: "", // Drizzle //TODO: Add these remaining icons.
@@ -59,12 +59,12 @@ async function getCurrentWeather(latitude, longitude) {
     // TODO: Add try-catch code to deal with erroneous fetches.
     const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
-    
+
     // Extract the data for the resource rules and to display to the screen.
     const weatherID = data.weather[0].id; // The type of weather (rain, snow, clear)
     const description = data.weather[0].description;
     const temperature = data.main.temp;
-    const windSpeed = data.wind.speed; 
+    const windSpeed = data.wind.speed;
 
     // Display the data into the HTML file for the relevant fields.
     weatherDescription.innerHTML = formatWeatherDescription(description, weatherID);
@@ -121,22 +121,35 @@ async function getCurrentPollutionData(latitude, longitude) {
     return airQuality;
 }
 
-function displayHistoricalData(data) {
-    const historicalData = document.getElementById("historical-weather");
+function displayHistoricalData(weatherData, pollutionData) {
+    // Combine both the weather and pollution data into one by aligning their respective indexes.
+    // Both sets of data are ordered by date and time in the same granularity, so the times will match when combining.
+    const combinedData = weatherData.list.map((weatherElement, index) => {
+        return {
+            weather: weatherElement,
+            pollution: pollutionData.list[index]
+        };
+    });
+
+    console.log(combinedData);
+    const historicalData = document.getElementById("historical-data");
     // Get every object in the data.list parent object.
 
     let tableRows = "";
-    data.list.forEach((element) => {
+    combinedData.forEach((element) => {
+        const weather = element.weather;
+        const pollution = element.pollution
         // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy HH:mm");
+        dateTime = dateFns.format(new Date(weather.dt * 1000), "dd/MM/yyyy HH:mm");
         tableRows += `
             <tr>
                 <td>${dateTime}</td>
-                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
-                <td>${element.main.temp}</td>
-                <td>${element.wind.speed}</td>
+                <td>${formatWeatherDescription(weather.weather[0].description, weather.weather[0].id)}</td>
+                <td>${weather.main.temp}</td>
+                <td>${weather.wind.speed}</td>
+                <td>${formatAirQuality(pollution.main.aqi)}
             </tr>
-        `        
+        `
     });
     historicalData.innerHTML = tableRows;
 }
@@ -144,22 +157,34 @@ function displayHistoricalData(data) {
 /**
  * Sets the historical data to 24 hours ago by default.
  */
-async function getHistoricalWeatherData(latitude, longitude) {
+async function getHistoricalEnvironmentData(latitude, longitude) {
     // Convert current time to a UNIX timestamp.
     const now = Math.floor(Date.now() / 1000);
 
     const startDate = now - 86400; // 24 hours ago given in seconds (86400).
     const endDate = now;
 
-    const response = await fetch(`api/api.php?type=weather_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
-    const data = await response.json();
+    const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
+    const [weatherData, pollutionData] = await response.json();
 
-    console.log(data);
+    console.log(weatherData);
     console.log(`Latitude: ${latitude}; Longitude: ${longitude}`)
-    displayHistoricalData(data);
+    displayHistoricalData(weatherData, pollutionData);
 }
+
+async function getFutureEnvironmentData(latitude, longitude) {
+    // Convert current time to a UNIX timestamp.
+    const now = Math.floor(Date.now() / 1000);
+
+    const startDate = now;
+    const endDate = now + 86400; // 24 hours in the future given in seconds (86400).    
+
+    const response = await fetch(`api/api.php?type=environment_future&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
+    const [weatherData, pollutionData] = await response.json()
+}
+
 // TODO: Fix this function so that it can actually get the current geolocation
-async function handleDateSelection() { 
+async function handleDateSelection() {
     // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
     event.preventDefault();
 
@@ -175,13 +200,13 @@ async function handleDateSelection() {
     // Convert the dates to a UNIX timestamp
     const startDate = Math.floor(new Date(startHTMLValue).getTime() / 1000);
     const endDate = Math.floor(new Date(endHTMLValue).getTime() / 1000) + (60 * 60 * 24);   // Needs to add 1 day to ensure all the times past midnight are included.
-    
+
     // Limit the number of days the user can choose because of the API's restrictions.
     const maxDayRange = 7;
     const differenceInDays = (endDate - startDate) / (60 * 60 * 24) // Convert UNIX (milliseconds) to days before calculating the difference.
     if (differenceInDays > maxDayRange) {
         alert(`You cannot enter dates that are more than ${maxDayRange} days apart.`)
-        return;       
+        return;
     }
 
     currentDatePlusOne = Math.floor(new Date().getTime() / 1000) + (60 * 60 * 24); // Same reasoning as before.
@@ -192,7 +217,7 @@ async function handleDateSelection() {
 
     const response = await fetch(`api/api.php?type=weather_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
     const data = await response.json();
-    
+
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
     if (response.status == 400) {
         alert("Bad request. Please change the dates entered.")
@@ -209,6 +234,6 @@ document.addEventListener("DOMContentLoaded", () => {
         "click",
         handleDateSelection
     )
-}) 
+})
 
 
