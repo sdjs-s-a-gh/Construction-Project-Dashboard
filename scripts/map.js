@@ -104,6 +104,11 @@ async function initTableAndMarkers(map, markerGroup) {
 /**
  * Updates the HTML that holds information about a Project's Details.
  * 
+ * This function updates all the associated information about a project, including details
+ * like the project description and resources required as well as the weather and pollution
+ * data at the location. Additionally, a recommendation is computed that determines whether
+ * certain resources may be used based off the current environmental data.
+ * 
  * @param {int} projectID The ID for the project to fetch information about.
  * @param {string} title The title for the project.
  * @param {string} geolocation The Latitude and Longitude co-ordinates for the project.
@@ -167,26 +172,12 @@ async function updateProjectDetails(projectID, title, geolocation) {
         }
     }
 
-    // earthMovingEquipment = ["Dumper Truck", "Digger", "Loader"]
-    // nonEarthMovingEquipment = ["Drill", "Concrete Mixer"]
-    // for resource in projectResources:
-    //  rules = resourceRules[resource]:
-    //  if highWind in rules AND isHighWind:
-    //      flag highWind
-    //  if badWeather in rules and isBadWeather:
-    //      flag badWeather
-    //  if poorAirQuality in rules and isPoorAirQuality:
-    //  flag poorAirQuality
-    // end for
-    //
-    // if !(highWind or badWeather or poorAirQuality):
-    //  "Everything is good to go"
-
     // Booleans to represent which conditions should be displayed back to the user.
     let highWindMsg = false;
     let heavyRainMsg = false;
     let poorAirQualityMsg = false;
 
+    // Iterate through each resource used on the project to determine whether it can be used.
     projectResources.forEach(resource => {
         const rules = resourceRules[resource];
 
@@ -203,21 +194,25 @@ async function updateProjectDetails(projectID, title, geolocation) {
         }
     })
 
+    // Update the recommendations tag to show the user which equipment cannot be used.
+    let recommendation = "";
     if (highWindMsg) {
-        console.log(`Work with the crane recommended to be ceased since and the current windspeed (${windSpeed}) exceeds 20mph.`)
+        recommendation += `Work with the crane is recommended to be ceased since the current windspeed (${windSpeed}) exceeds 20mph.`
     }
 
     if (heavyRainMsg) {
-        console.log(`Work is recommended to be delayed with the earth-moving equipment, drills and concrete mixer due to rainfall.`);
+        recommendation += `Work is recommended to be delayed with any earth-moving equipment, drills and concrete mixers due to rainfall.`;
     }
 
     if (poorAirQualityMsg) {
-        console.log(`Work is recommended to be ceased for any earth-moving equipment since the air quality is too low (${airQuality}).`);
+        recommendation += `Work is recommended to be ceased for any earth-moving equipment since the air quality is too low (${airQuality}).`;
     }
 
     if (!(highWindMsg || heavyRainMsg || poorAirQualityMsg)) {
-        console.log("All work can proceed.")
+        recommendation += "All work may proceed as the weather, wind speed and air quality are all sufficient."
     }
+
+    document.getElementById("project-status").innerHTML = recommendation;
 
     getHistoricalWeatherData(lat, lng);
 }

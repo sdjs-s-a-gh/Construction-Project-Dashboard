@@ -59,7 +59,7 @@ async function getCurrentWeather(latitude, longitude) {
     // TODO: Add try-catch code to deal with erroneous fetches.
     const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
-
+    
     // Extract the data for the resource rules and to display to the screen.
     const weatherID = data.weather[0].id; // The type of weather (rain, snow, clear)
     const description = data.weather[0].description;
