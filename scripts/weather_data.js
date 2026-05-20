@@ -61,19 +61,20 @@ async function getCurrentWeather(latitude, longitude) {
     const data = await response.json();
 
     // Extract the data for the resource rules and to display to the screen.
-    description = data.weather[0].description;
-    temperature = data.main.temp;
-    windSpeed = data.wind.speed; 
+    const weatherID = data.weather[0].id; // The type of weather (rain, snow, clear)
+    const description = data.weather[0].description;
+    const temperature = data.main.temp;
+    const windSpeed = data.wind.speed; 
 
     // Display the data into the HTML file for the relevant fields.
-    weatherDescription.innerHTML = formatWeatherDescription(description, data.weather[0].id);
+    weatherDescription.innerHTML = formatWeatherDescription(description, weatherID);
     weatherTemp.innerText = temperature;
     weatherWind.innerText = windSpeed;
 
     // Additional details.
     weatherHumidity.innerText = data.main.humidity;
 
-    return description, windSpeed;
+    return [description, windSpeed, weatherID];
 }
 
 function formatAirQuality(airQualityIndex) {
@@ -141,7 +142,7 @@ function displayHistoricalData(data) {
 }
 
 /**
- * Sets the historical data to 24 hours ago.
+ * Sets the historical data to 24 hours ago by default.
  */
 async function getHistoricalWeatherData(latitude, longitude) {
     // Convert current time to a UNIX timestamp.
@@ -152,12 +153,13 @@ async function getHistoricalWeatherData(latitude, longitude) {
 
     const response = await fetch(`api/api.php?type=weather_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
     const data = await response.json();
+
     console.log(data);
     console.log(`Latitude: ${latitude}; Longitude: ${longitude}`)
     displayHistoricalData(data);
 }
-
-async function handleDateSelection() {
+// TODO: Fix this function so that it can actually get the current geolocation
+async function handleDateSelection() { 
     // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
     event.preventDefault();
 

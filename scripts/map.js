@@ -23,7 +23,7 @@ function initMap() {
     // Additionally, add the attribution tag to comply with OpenStreetMaps's license.
     L.tileLayer(
         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        {attribution: "&copy; OpenStreetMap contributors"}
+        { attribution: "&copy; OpenStreetMap contributors" }
     ).addTo(map);
 
     return map
@@ -63,7 +63,7 @@ function createMarker(project, map, markerGroup) {
     marker.on("click", function () {
         updateProjectDetails(project.project_id, projectName, project.geolocation);
     });
-   
+
     return marker;
 }
 
@@ -133,21 +133,28 @@ async function updateProjectDetails(projectID, title, geolocation) {
     const lat = parseFloat(latlngArray[0].trim());
     const lng = parseFloat(latlngArray[1].trim());
 
-    let windSpeed = 0;
-    let weatherDescription = "";
-    weatherDescription, windSpeed = await getCurrentWeather(lat, lng);
-    airQuality = await getCurrentPollutionData(lat, lng);
+    const [weatherDescription, windSpeed, weatherID] = await getCurrentWeather(lat, lng);
+    const airQuality = await getCurrentPollutionData(lat, lng);
 
-    isHighWind = windSpeed > 20;
-    isBadWeather = "";
-    isPoorAirQuality = airQuality > 2;
+    const isHighWind = windSpeed > 20;
+    const isBadWeather = weatherID === 502 || weatherID === 503 || weatherID === 504 || weatherID === 522;
+    const isPoorAirQuality = airQuality > 2;
 
-    if (isHighWind) {
-        console.log(`Wind speed is high: ${windSpeed}`);
-    } else {
-        console.log(`Wind speed is low: ${windSpeed}`);
+    // 502, 503, 504, 522
+
+    if (resources.includes("Crane") && isHighWind) {
+        console.log(`Work is recommended to be ceased since the project requires a crane and the current
+            windspeed (${windSpeed}) exceeds 20mph.`);
     };
 
-    
+    if (resources.includes("Dumper Truck") && isBadWeather) {
+        console.log(`Work is recommended to be delayed due to rainfall.`);
+    };
+
+    if (resources.includes("Dumper Truck") && isPoorAirQuality) {
+        console.log(`Work is recommended to be ceased for any earth-moving equipment since the air quality
+             is too low (${airQuality}).`);
+    };
+
     getHistoricalWeatherData(lat, lng);
 }
