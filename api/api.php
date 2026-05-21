@@ -46,14 +46,7 @@ try {
             throw new ClientError("$endpointTarget", 404);
     };
 
-    // Issue with the Open Weather API call, which is given with either a "cod" or "code" key.
-    $isIssue = (isset($data["cod"]) && (int) $data["cod"] !== 200) || isset($data[0]["code"]) && (int) $data[0]["code"] !== 200;
-    if ($isIssue) {
-        $errorMessage = $data["message"];
-        throw new ClientError("$errorMessage", 400);
-    } else {
-        $statusCode = 200;
-    }
+    $statusCode = 200;
 } catch (ClientError $clientException) {
     $data = [];
     $data["Error"] = $clientException->getMessage();
@@ -84,6 +77,11 @@ function fetchJSON(string $url)
         throw new ClientError("The parameters entered have formed an invalid URL.", 500);
     }
 
+    // Issue with the Open Weather API call, which is given with either a "cod" or "code" key.
+    if ((isset($response["cod"]) && (int) $response["cod"] !== 200) || (isset($response["code"]) && (int) $response["code"] !== 200)) {
+        throw new ClientError($response["message"], 422);
+    }    
+
     return $response;
 }
 
@@ -108,7 +106,7 @@ function handleWeatherCurrent(Request $request, string $apiKey)
     validateQueryParameters($queryParameters, ["latitude", "longitude"]);
 
     $latitude = $queryParameters["latitude"];
-    $longitude = $queryParameters["longitude"];    
+    $longitude = $queryParameters["longitude"];
 
     $url = "https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&units=metric&appid=$apiKey";
     $response = fetchJSON($url);
