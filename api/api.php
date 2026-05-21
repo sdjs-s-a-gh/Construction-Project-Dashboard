@@ -3,77 +3,6 @@ require "exception_handler.php";
 require "autoloader.php";
 $ENV = require "env.php";
 
-/**
- * Retrieves an OAuth token for the website from Microsoft Azure.
- */
-function getAccessToken()
-{
-    global $ENV;
-    $tenantID = $ENV["TENANT_ID"];
-    $clientID = $ENV["CLIENT_ID"];
-    $clientSecret = $ENV["CLIENT_SECRET"];
-
-
-    // Retrieve the OAuth token from Microsoft Azure using the Tenant ID of the
-    // application registration. 
-    $url = "https://login.microsoftonline.com/$tenantID/oauth2/v2.0/token";
-
-
-    $data = http_build_query([
-        "client_id" => $clientID,
-        "scope" => "https://vault.azure.net/.default",
-        "client_secret" => $clientSecret,
-        "grant_type" => "client_credentials"
-    ]);
-
-    $options = [
-        "http" => [
-            "header" => "Content-type: application/x-www-form-urlencoded.",
-            "method" => "POST",
-            "content" => $data
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-
-    // TODO: Probably fix this print statement
-    if ($response === false) {
-        echo "Error Response:" + var_dump(error_get_last());
-        die("HTTP request failed");
-    }
-    // TODO: Throw a client error here whenever the response is invalid.  
-
-    $json = json_decode($response, true);
-
-    return $json["access_token"];
-}
-
-/**
- * Returns the Secret Key for a given vault and corresponding secret.
- * 
- * An example usage of this function may be to get the API key to for the
- * OpenWeatherData API.
- */
-function getSecret($vaultName, $secretName)
-{
-    $token = getAccessToken();
-
-    $url = "https://$vaultName.vault.azure.net/secrets/$secretName?api-version=7.4";
-
-    $options = [
-        "http" => [
-            "header" => "Authorization: Bearer $token\r\n"
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-
-    $json = json_decode($response, true);
-    return $json["value"];
-}
-
 function validateQueryParameters(array $queryParameters, array $requiredParameters): bool
 {
     foreach ($requiredParameters as $paramIndex => $paramName) {
@@ -112,6 +41,28 @@ function handleWeatherCurrent(Request $request, string $apiKey)
 
     $response = json_decode($response, true);
 
+    if ($response == null) {
+        throw new ClientError("The parameters entered have formed an invalid URL.", 500);
+    }
+
+    return $response;
+}
+
+function fetchJSON(string $url)
+{
+    $options = [
+        "http" => [
+            "ignore_errors" => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
+
+    $response = json_decode($response, true);
+
+    // Throw an error if there was something wrong with the URL which caused it to not send
+    // a request.
     if ($response == null) {
         throw new ClientError("The parameters entered have formed an invalid URL.", 500);
     }
@@ -209,7 +160,7 @@ function handlePollutionFuture(Request $request, string $apiKey)
     $latitude = $queryParameters["latitude"];
     $longitude = $queryParameters["longitude"];
 
-    $url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=$latitude&lon=$longitude&cnt=$days&units=metric&appid=$apiKey";
+    $url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=$latitude&lon=$longitude&units=metric&appid=$apiKey";
 
     $options = [
         "http" => [
@@ -235,7 +186,7 @@ function handleProjectList(Database $db)
     return $data;
 }
 
-function handleProjectDetailed(Request $request, Database $db) 
+function handleProjectDetailed(Request $request, Database $db)
 {
     $sqlQuery = "SELECT tblProjects.project_id, tblProjects.description, tblProjects.manager,
         tblProjects.location, tblResources.resource_type 
@@ -243,19 +194,18 @@ function handleProjectDetailed(Request $request, Database $db)
         INNER JOIN tblProjectResources ON tblProjects.project_id = tblProjectResources.project_id
         INNER JOIN tblResources ON tblResources.resource_id = tblProjectResources.resource_id
         WHERE tblProjects.project_id = ?";
-    
+
     $queryParameters = $request->getQueryParameters();
     validateQueryParameters($queryParameters, ["project_id"]);
 
     // Convert the Project ID into an array to be used as a parameter.
-    $projectID = [$queryParameters["project_id"]];    
+    $projectID = [$queryParameters["project_id"]];
     $data = $db->executeSQL($sqlQuery, $projectID);
 
     return $data;
 }
 
 // Handle routing different requests
-//$backendApiKey = new ApiKey("1234");
 $request = new Request();
 $database = new Database(
     "citytourwebsite-wk10-workshop.database.windows.net, 1433",
@@ -264,13 +214,10 @@ $database = new Database(
     "CandBtorture2122"
 );
 
-// Validate the API Key given to access the backend.
-//$backendApiKey->validateApiKey($request->getAllHttpHeaders());
-
-$openWeatherApiKey = getSecret("kv6012-keyvault-d56e8", "OpenWeatherAPIKey");
+$azureKeyVault = new AzureKeyVault($ENV);
+$openWeatherApiKey = $azureKeyVault->getSecret("kv6012-keyvault-d56e8", "OpenWeatherAPIKey");
 
 // Get the endpoint target
-//$endpointTarget = $request->getEndpointTarget();
 $endpointTarget = $request->getQueryParameters()["type"];
 
 try {
@@ -278,7 +225,7 @@ try {
         case "weather_current":
             $data = handleWeatherCurrent($request, $openWeatherApiKey);
             break;
-        case "air_pollution_current":   // TODO: For some reason, this is broken. I don't think it is.
+        case "air_pollution_current":
             $data = handlePollutionCurrent($request, $openWeatherApiKey);
             break;
         case "environment_historical":
