@@ -225,8 +225,8 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
     displayHistoricalData(weatherData, pollutionData);
 }
 
-async function getFutureWeatherData(latitude, longitude) {
-    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=4`);
+async function getFutureWeatherData(latitude, longitude, days = 5) {
+    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
     const weatherData = await response.json();
 
     console.log(weatherData);
@@ -271,6 +271,7 @@ async function handleHistoricDateSelection() {
 
     console.log(startDate);
     console.log(endDate)
+
     // Limit the number of days the user can choose because of the API's restrictions.
     const maxDayRange = 7;
     const differenceInDays = (endDate - startDate) / (60 * 60 * 24) // Convert UNIX (milliseconds) to days before calculating the difference.
@@ -286,19 +287,16 @@ async function handleHistoricDateSelection() {
     }
 
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
-    const [weatherData, pollutionData] = await response.json();
-
-    console.log(weatherData);
-    console.log(pollutionData);
-
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
     if (response.status == 400) {
         alert("Bad request. Please change the dates entered.")
         return;
     } else if (weatherData.length == 0 || pollutionData.length == 0) {
         alert("Error with the latitude and longitude.") // TODO
+        return;
     }
 
+    const [weatherData, pollutionData] = await response.json();
     displayHistoricalData(weatherData, pollutionData);
 }
 
@@ -309,6 +307,26 @@ async function handlePollutionSelection() {
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-pollution-date").value;
     const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
+    const now = Math.floor(new Date().getTime() / 1000);
+    const currentDate = Math.floor(new Date().getTime() / 1000);
+    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
+
+    if (forecastDate <= currentDate) {
+        alert("You cannot enter a date prior to today.");
+        return;
+    } else if (differenceInDays > 4) {
+        alert("You cannot enter a date more than 4 days from now.");
+        return;
+    };
+
+    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
+    if (response.status == 400) {
+        alert("Bad request. Please change the dates entered.")
+        return;
+    } else if (weatherData.length == 0 || pollutionData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    }
 
     // Since all the data is already displayed (because the Pollution API doesn't let you choose the number of days to forecast), remove the days out of range in the table.
     document.querySelectorAll("#future-pollution-data tr").forEach(row => {
@@ -332,13 +350,24 @@ async function handleFutureWeatherSelection() {
     const currentDate = Math.floor(new Date().getTime() / 1000);
     const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
 
-    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${differenceInDays}`);
-    const weatherData = await response.json();
+    if (forecastDate <= currentDate) {
+        alert("You cannot enter a date prior to today.");
+        return;
+    } else if (differenceInDays > 16) {
+        alert("You cannot enter a date more than 16 days from now.");
+        return;
+    };
 
-    console.log(weatherData);
-
-    const futureWeatherData = document.getElementById("future-weather-data");
-    futureWeatherData.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy");
+    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
+    if (response.status == 400) {
+        alert("Bad request. Please change the dates entered.")
+        return;
+    } else if (weatherData.length == 0 || pollutionData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    }
+    // TODO: (Check this comment) Use the pre-existing weather fetch since it can be generalised to change the days.
+    getFutureWeatherData(latitude, longitude, differenceInDays);
 }
 
 /**

@@ -46,8 +46,9 @@ try {
             throw new ClientError("$endpointTarget", 404);
     };
 
-    // Issue with the Open Weather API call.
-    if (isset($data["cod"]) && (int) $data["cod"] !== 200) {
+    // Issue with the Open Weather API call, which is given with either a "cod" or "code" key.
+    $isIssue = (isset($data["cod"]) && (int) $data["cod"] !== 200) || isset($data[0]["code"]) && (int) $data[0]["code"] !== 200;
+    if ($isIssue) {
         $errorMessage = $data["message"];
         throw new ClientError("$errorMessage", 400);
     } else {
