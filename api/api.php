@@ -3,51 +3,6 @@ require "exception_handler.php";
 require "autoloader.php";
 $ENV = require "env.php";
 
-function validateQueryParameters(array $queryParameters, array $requiredParameters): bool
-{
-    foreach ($requiredParameters as $paramIndex => $paramName) {
-        if (!array_key_exists($paramName, $queryParameters)) {
-            throw new ClientError("'$paramName' has not been given.", 422);
-            return false;
-        }
-    }
-
-    return true;
-}
-
-function handleWeatherCurrent(Request $request, string $apiKey)
-{
-    $queryParameters = $request->getQueryParameters();
-
-    // TODO: trim the query parameters to remove trailing spaces and make sure lat and lng are integers.
-
-    validateQueryParameters($queryParameters, ["latitude", "longitude"]);
-
-    $latitude = $queryParameters["latitude"];
-    $longitude = $queryParameters["longitude"];
-
-    $url = "https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&units=metric&appid=$apiKey";
-
-    $options = [
-        "http" => [
-            "ignore_errors" => true
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-
-    // TODO: Invalid URL because of trailing spaces.
-
-    $response = json_decode($response, true);
-
-    if ($response == null) {
-        throw new ClientError("The parameters entered have formed an invalid URL.", 500);
-    }
-
-    return $response;
-}
-
 function fetchJSON(string $url)
 {
     $options = [
@@ -70,6 +25,34 @@ function fetchJSON(string $url)
     return $response;
 }
 
+function validateQueryParameters(array $queryParameters, array $requiredParameters): bool
+{
+    foreach ($requiredParameters as $paramIndex => $paramName) {
+        if (!array_key_exists($paramName, $queryParameters)) {
+            throw new ClientError("'$paramName' has not been given.", 422);
+        }
+    }
+
+    return true;
+}
+
+function handleWeatherCurrent(Request $request, string $apiKey)
+{
+    $queryParameters = $request->getQueryParameters();
+
+    // TODO: trim the query parameters to remove trailing spaces and make sure lat and lng are integers.
+
+    validateQueryParameters($queryParameters, ["latitude", "longitude"]);
+
+    $latitude = $queryParameters["latitude"];
+    $longitude = $queryParameters["longitude"];    
+
+    $url = "https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&units=metric&appid=$apiKey";
+    $response = fetchJSON($url);
+
+    return $response;
+}
+
 /**
  * Returns the weather and pollution data within a certain period of time.
  */
@@ -86,18 +69,8 @@ function handleEnvironmentHistorical(Request $request, string $apiKey)
     $weatherURL = "https://history.openweathermap.org/data/2.5/history/city?lat=$latitude&lon=$longitude&type=hour&start=$startDate&end=$endDate&units=metric&appid=$apiKey";
     $pollutionURL = "http://api.openweathermap.org/data/2.5/air_pollution/history?lat=$latitude&lon=$longitude&start=$startDate&end=$endDate&units=metric&appid=$apiKey";
 
-    $options = [
-        "http" => [
-            "ignore_errors" => true
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $weatherResponse = file_get_contents($weatherURL, false, $context);
-    $pollutionResponse = file_get_contents($pollutionURL, false, $context);
-
-    $weatherResponse = json_decode($weatherResponse, true);
-    $pollutionResponse = json_decode($pollutionResponse, true);
+    $weatherResponse = fetchJSON($weatherURL);
+    $pollutionResponse = fetchJSON($pollutionURL);
 
     return [$weatherResponse, $pollutionResponse];
 }
@@ -111,16 +84,7 @@ function handlePollutionCurrent(Request $request, string $apiKey)
     $longitude = $queryParameters["longitude"];
 
     $url = "https://api.openweathermap.org/data/2.5/air_pollution?lat=$latitude&lon=$longitude&appid=$apiKey";
-
-    $options = [
-        "http" => [
-            "ignore_errors" => true
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-    $response = json_decode($response, true);
+    $response = fetchJSON($url);
 
     return $response;
 }
@@ -138,16 +102,7 @@ function handleWeatherFuture(Request $request, string $apiKey)
     $days = $queryParameters["days"];
 
     $url = "https://api.openweathermap.org/data/2.5/forecast/daily?lat=$latitude&lon=$longitude&cnt=$days&units=metric&appid=$apiKey";
-
-    $options = [
-        "http" => [
-            "ignore_errors" => true
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-    $response = json_decode($response, true);
+    $response = fetchJSON($url);
 
     return $response;
 }
@@ -161,16 +116,7 @@ function handlePollutionFuture(Request $request, string $apiKey)
     $longitude = $queryParameters["longitude"];
 
     $url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=$latitude&lon=$longitude&units=metric&appid=$apiKey";
-
-    $options = [
-        "http" => [
-            "ignore_errors" => true
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-    $response = json_decode($response, true);
+    $response = fetchJSON($url);
 
     return $response;
 }
@@ -260,8 +206,6 @@ try {
     $statusCode = $clientException->getStatusCode();
 }
 
-$httpHeaders = ["Access-Control-Allow-Methods" => "GET, OPTIONS"];
-
 // Send the response back to the frontend.
-$response = new Response($statusCode, $httpHeaders);
+$response = new Response($statusCode, $ENV);
 $response->outputJSON($data);
