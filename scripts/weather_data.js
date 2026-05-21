@@ -6,11 +6,9 @@ const weatherWind = document.getElementById("weather-wind")
 
 const airQualityIndex = document.getElementById("pollution-air-quality")
 const carbonMinoxide = document.getElementById("pollution-carbon-monixide")
-const nitrogenMinoxide = document.getElementById("pollution-nitrogen-monoxide")
 const nitrogenDioxide = document.getElementById("pollution-nitrogen-dioxide")
-const ozone = document.getElementById("pollution-ozone")
-const sulphurDioxide = document.getElementById("pollution-sulphur-dioxide")
-const ammonia = document.getElementById("pollution-ammonia")
+const pm10 = document.getElementById("pollution-particulate-10");
+const pm2_5 = document.getElementById("pollution-particulate-2_5");
 
 /**
  * Returns the description of the weather with a corresponding visual icon.
@@ -101,22 +99,12 @@ async function getCurrentPollutionData(latitude, longitude) {
 
     console.log(data);
     // Display the CO2 data into the HTML file.
-    airQuality = data.list[0].main.aqi;
+    const airQuality = data.list[0].main.aqi;
     airQualityIndex.innerText = formatAirQuality(airQuality);
     carbonMinoxide.innerText = data.list[0].components.co;
-    ammonia.innerText = data.list[0].components.nh3;
-    nitrogenMinoxide.innerText = data.list[0].components.no;
     nitrogenDioxide.innerText = data.list[0].components.no2;
-    ozone.innerText = data.list[0].components.o3;
-    sulphurDioxide.innerText = data.list[0].components.so2;
-
-    // Particulates:
-    // carbonMinoxide.innerText = data.list[0].components.pm2_5;
-    // carbonMinoxide.innerText = data.list[0].components.pm10;
-
-    // Currently, display the details of the current timestamp statically. In the future, this
-    // will have to be made dynamic to avoid hardcoding multiple indexes.
-    // TODO    
+    pm10.innerText = data.list[0].components.pm10;
+    pm2_5.innerText = data.list[0].components.pm2_5;
 
     return airQuality;
 }
@@ -156,6 +144,8 @@ function displayHistoricalData(weatherData, pollutionData) {
                 <td>${formatAirQuality(element.main.aqi)}</td>
                 <td>${element.components.co}</td>
                 <td>${element.components.no2}</td>
+                <td>${element.components.pm10}</td>
+                <td>${element.components.pm2_5}</td>
             </tr>
         `
 
@@ -243,6 +233,8 @@ async function getFuturePollutionData(latitude, longitude) {
                 <td>${formatAirQuality(element.main.aqi)}</td>
                 <td>${element.components.co}</td>
                 <td>${element.components.no2}</td>
+                <td>${element.components.pm10}</td>
+                <td>${element.components.pm2_5}</td>
             </tr>
         `
     });
