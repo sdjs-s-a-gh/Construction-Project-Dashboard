@@ -227,8 +227,16 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
 
 async function getFutureWeatherData(latitude, longitude, days = 5) {
     const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
-    const weatherData = await response.json();
+    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
+    if (response.status == 400) {
+        alert("Bad request. Please change the dates entered.")
+        return;
+    } else if (weatherData.length == 0 || pollutionData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    }
 
+    const weatherData = await response.json();
     console.log(weatherData);
     const futureWeatherData = document.getElementById("future-weather-data");
     futureWeatherData.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy");
@@ -287,6 +295,8 @@ async function handleHistoricDateSelection() {
     }
 
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
+    const [weatherData, pollutionData] = await response.json();
+    
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
     if (response.status == 400) {
         alert("Bad request. Please change the dates entered.")
@@ -319,16 +329,8 @@ async function handlePollutionSelection() {
         return;
     };
 
-    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
-    if (response.status == 400) {
-        alert("Bad request. Please change the dates entered.")
-        return;
-    } else if (weatherData.length == 0 || pollutionData.length == 0) {
-        alert("Error with the latitude and longitude.") // TODO
-        return;
-    }
-
-    // Since all the data is already displayed (because the Pollution API doesn't let you choose the number of days to forecast), remove the days out of range in the table.
+    // Since all the data is already displayed (because the Pollution API doesn't let you
+    // choose the number of days to forecast), remove the days out of range in the table.
     document.querySelectorAll("#future-pollution-data tr").forEach(row => {
         // Get the date of the cell to check whether it needs to be hidden.
         const dateCell = row.id;
@@ -358,14 +360,6 @@ async function handleFutureWeatherSelection() {
         return;
     };
 
-    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
-    if (response.status == 400) {
-        alert("Bad request. Please change the dates entered.")
-        return;
-    } else if (weatherData.length == 0 || pollutionData.length == 0) {
-        alert("Error with the latitude and longitude.") // TODO
-        return;
-    }
     // TODO: (Check this comment) Use the pre-existing weather fetch since it can be generalised to change the days.
     getFutureWeatherData(latitude, longitude, differenceInDays);
 }

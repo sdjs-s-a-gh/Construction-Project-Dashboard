@@ -5,15 +5,20 @@ $ENV = require "env.php";
 
 // Create all the objects needed to process a request from the frontend.
 $request = new Request();
-$database = new Database(
-    "citytourwebsite-wk10-workshop.database.windows.net, 1433",
-    "citytour",
-    "w23027648",
-    "CandBtorture2122"
-);
 
 $azureKeyVault = new AzureKeyVault($ENV);
 $openWeatherApiKey = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "OpenWeatherAPIKey");
+
+$databaseServer = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseServerName");
+$databaseName = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseName");
+$databaseUID = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseUserID");
+$databasePWD = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabasePassword");
+$database = new Database(
+    $databaseServer,
+    $databaseName,
+    $databaseUID,
+    $databasePWD
+);
 
 // Get the endpoint target
 $endpointTarget = $request->getQueryParameters()["type"];
@@ -193,7 +198,7 @@ function handleProjectList(Database $db)
 {
     $sqlQuery = "SELECT project_id, title, geolocation FROM tblProjects";
     $data = $db->executeSQL($sqlQuery);
-
+         
     return $data;
 }
 

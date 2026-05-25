@@ -29,9 +29,11 @@ async function initTableAndMarkers(map, markerGroup) {
     // Fetch a small amount of data about a project so it can be displayed in a table for
     // the user to press.
     const response = await fetch(`api/api.php?type=project-list`);
-    const data = await response.json();
 
-    
+    if (response.status !== 200) {
+        projectsTable.innerHTML = "Error loading the Projects."
+    }
+    const data = await response.json();
 
     let tableRows = "";
     data.forEach((project) => {
