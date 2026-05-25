@@ -328,7 +328,7 @@ async function handleHistoricDateSelection() {
         return;
     }
 
-    const currentDatePlusOne = Math.floor(new Date().getTime() / 1000) + (60 * 60 * 24); // Same reasoning as before.
+    const currentDatePlusOne = Math.floor(Date.now() / 1000) + (60 * 60 * 24); // Same reasoning as before.
     if (endDate > currentDatePlusOne || startDate > currentDatePlusOne) {
         alert("You cannot enter a date that is in the future.")
         return;
@@ -358,7 +358,7 @@ async function handlePollutionSelection() {
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-pollution-date").value;
     const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
-    const currentDate = Math.floor(new Date().getTime() / 1000);
+    const currentDate = Math.floor(Date.now() / 1000);
     const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)); // Rounds upwards as the 'now' variable gets the current time and not the start of the day.
 
     if (forecastDate <= currentDate) {
@@ -395,20 +395,22 @@ async function handleFutureWeatherSelection() {
 
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-weather-date").value;
-    const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
-    const currentDate = Math.floor(new Date().getTime() / 1000);
-    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
+    const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000); 
+    const currentDate = Math.floor(Date.now() / 1000);
+    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)); // Rounds upwards.
 
+    console.log(forecastDate);
     if (forecastDate <= currentDate) {
         alert("You cannot enter a date prior to today.");
         return;
-    } else if (differenceInDays > 16) {
-        alert("You cannot enter a date more than 16 days from now.");
+        // Limit the number of days to 15 to correspond to the API.
+    } else if (differenceInDays > 15) {
+        alert("You cannot enter a date more than 15 days from now.");
         return;
     };
 
     // TODO: (Check this comment) Use the pre-existing weather fetch since it can be generalised to change the days.
-    await getFutureWeatherData(latitude, longitude, differenceInDays);
+    await getFutureWeatherData(latitude, longitude, differenceInDays + 1); // Adds an additional day since the API will only go to the day before.
 }
 
 /**
