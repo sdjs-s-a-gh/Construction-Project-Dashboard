@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     getCurrentWeather(latitude, longitude);
     getCurrentPollutionData(latitude, longitude);
     getHistoricalEnvironmentData(latitude, longitude);
+    getFuturePollutionData(latitude, longitude);
+    getFutureWeatherData(latitude, longitude);
 
     document.getElementById("btn-historical-date").addEventListener(
         "click",
@@ -92,6 +94,11 @@ async function getCurrentWeather(latitude, longitude) {
 
     // TODO: Add try-catch code to deal with erroneous fetches.
     const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
+
+    // if (response.status !== 200) {
+        
+    //     return;
+    // }
     const data = await response.json();
 
     // Extract the data for the resource rules and to display to the screen.
@@ -309,7 +316,9 @@ async function handleHistoricDateSelection() {
     const differenceInDays = (endDate - startDate) / (60 * 60 * 24) // Convert UNIX (milliseconds) to days before calculating the difference.
     if (differenceInDays > maxDayRange) {
         alert(`You cannot enter dates that are more than ${maxDayRange} days apart.`)
-        console.log(`start date: ${startDate}, end date: ${endDate}`)
+        return;
+    } else if (startDate > endDate) {
+        alert("The start date must be before the end date.");
         return;
     }
 
@@ -347,9 +356,11 @@ async function handlePollutionSelection() {
     const currentDate = Math.floor(new Date().getTime() / 1000);
     const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
 
+    console.log(differenceInDays)
     if (forecastDate <= currentDate) {
         alert("You cannot enter a date prior to today.");
         return;
+        // Limit the date to <=4 as the API cannot go further into the future.
     } else if (differenceInDays > 4) {
         alert("You cannot enter a date more than 4 days from now.");
         return;
@@ -359,7 +370,9 @@ async function handlePollutionSelection() {
     // choose the number of days to forecast), remove the days out of range in the table.
     document.querySelectorAll("#future-pollution-data tr").forEach(row => {
         // Get the date of the cell to check whether it needs to be hidden.
-        const dateCell = row.id;
+        const dateCell = row.children[0].innerHTML;
+        console.log(dateCell);
+        console.log(forecastDate);
 
         if (dateCell > forecastDate) {
             row.style.display = "none";
