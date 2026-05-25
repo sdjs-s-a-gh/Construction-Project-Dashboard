@@ -12,7 +12,7 @@ $openWeatherApiKey = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "OpenWeather
 $databaseServer = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseServerName");
 $databaseName = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseName");
 $databaseUID = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseUserID");
-$databasePWD = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabasePassword");
+$databasePWD = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabasePassword"). "error"; // TODO: remove the error.
 $database = new Database(
     $databaseServer,
     $databaseName,

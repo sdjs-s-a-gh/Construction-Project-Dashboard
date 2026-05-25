@@ -31,7 +31,8 @@ async function initTableAndMarkers(map, markerGroup) {
     const response = await fetch(`api/api.php?type=project-list`);
 
     if (response.status !== 200) {
-        projectsTable.innerHTML = "Error loading the Projects."
+        projectsTable.innerHTML = "Error loading the Projects.";
+        return;
     }
     const data = await response.json();
 

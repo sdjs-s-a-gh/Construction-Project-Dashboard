@@ -1,4 +1,13 @@
+// TODO: Remove; this is just here for testing
+latitude = "54.191";
+longitude = "-1.161";
+
 document.addEventListener("DOMContentLoaded", () => {
+    // TODO: Remove
+    getCurrentWeather(latitude, longitude);
+    getCurrentPollutionData(latitude, longitude);
+    getHistoricalEnvironmentData(latitude, longitude);
+
     document.getElementById("btn-historical-date").addEventListener(
         "click",
         handleHistoricDateSelection
@@ -30,7 +39,7 @@ function formatWeatherDescription(weatherDescription, weatherID) {
     let icon = "";
 
     // Get the first digit of the weather group code.
-    weatherGroup = Math.floor(weatherID / 100);
+    const weatherGroup = Math.floor(weatherID / 100);
 
     // As some weather types contain different icons to the rest of their weather group,
     // handle them first.
@@ -59,7 +68,7 @@ function formatWeatherDescription(weatherDescription, weatherID) {
 
 function formatAirQuality(airQualityIndex) {
     // Map each index to its corresponding description.
-    aqiDictionary = {
+    const aqiDictionary = {
         1: "Good",
         2: "Fair",
         3: "Moderate",
@@ -68,7 +77,7 @@ function formatAirQuality(airQualityIndex) {
     }
 
     // Get the description of the AQI from the dictionary.
-    aqiDescription = aqiDictionary[airQualityIndex];
+    const aqiDescription = aqiDictionary[airQualityIndex];
 
     // Append the description to the string to return.
     airQualityIndex = `${airQualityIndex} (${aqiDescription})`
@@ -173,7 +182,7 @@ function formatWeatherData(weatherData, dateFormat) {
 
     weatherData.list.forEach((element) => {
         // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), dateFormat);
+        const dateTime = dateFns.format(new Date(element.dt * 1000), dateFormat);
         tableRows += `
             <tr>
                 <td>${dateTime}</td>
@@ -202,8 +211,14 @@ function displayHistoricalData(weatherData, pollutionData) {
     const historicalWeather = document.getElementById("historical-weather");
     const historicalPollution = document.getElementById("historical-pollution");
 
-    historicalWeather.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy HH:mm");
-    historicalPollution.innerHTML = formatPollutionData(pollutionData, "dd/MM/yyyy HH:mm");
+    if (weatherData !== null && pollutionData !== null) {
+        historicalWeather.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy HH:mm");
+        historicalPollution.innerHTML = formatPollutionData(pollutionData, "dd/MM/yyyy HH:mm");
+    } else {
+        const errorMsg = "Error fetching historic data."
+        historicalWeather.innerHTML = errorMsg;
+        historicalPollution.innerHTML = errorMsg;
+    };
 };
 
 /**
@@ -217,7 +232,13 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
     const endDate = now;
 
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
-    const [weatherData, pollutionData] = await response.json();
+    
+    let weatherData = null;
+    let pollutionData = null;
+
+    if (response.status == 200) {
+        [weatherData, pollutionData] = await response.json();
+    }
 
     console.log(weatherData);
     console.log(`Latitude: ${latitude}; Longitude: ${longitude}`);
@@ -227,16 +248,19 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
 
 async function getFutureWeatherData(latitude, longitude, days = 5) {
     const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
+
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
-    if (response.status == 400) {
-        alert("Bad request. Please change the dates entered.")
-        return;
-    } else if (weatherData.length == 0 || pollutionData.length == 0) {
-        alert("Error with the latitude and longitude.") // TODO
+    if (response.status !== 200) {
+        alert("Error fetching weather data for the days selected.")
         return;
     }
 
     const weatherData = await response.json();
+    if (weatherData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    }
+
     console.log(weatherData);
     const futureWeatherData = document.getElementById("future-weather-data");
     futureWeatherData.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy");
@@ -257,7 +281,10 @@ async function handleHistoricDateSelection() {
     event.preventDefault();
 
     // Retrieve the geolocation for the currently-selected project.
-    const [latitude, longitude] = getProjectGeolocation();
+    //const [latitude, longitude] = getProjectGeolocation();
+    // TODO: remove
+    const [latitude, longitude] = ["54.191", "-1.161"];
+
     console.log(latitude);
     console.log(longitude);
 
@@ -277,36 +304,35 @@ async function handleHistoricDateSelection() {
     // Then 2 hours must be taken away - one to return to the previous day and the other is because of daylight savings adding another hour.
     const endDate = Math.floor(new Date(endHTMLValue).getTime() / 1000) + ((60 * 60 * 24) - (60 * 60 * 2));
 
-    console.log(startDate);
-    console.log(endDate)
-
     // Limit the number of days the user can choose because of the API's restrictions.
     const maxDayRange = 7;
     const differenceInDays = (endDate - startDate) / (60 * 60 * 24) // Convert UNIX (milliseconds) to days before calculating the difference.
     if (differenceInDays > maxDayRange) {
         alert(`You cannot enter dates that are more than ${maxDayRange} days apart.`)
+        console.log(`start date: ${startDate}, end date: ${endDate}`)
         return;
     }
 
-    currentDatePlusOne = Math.floor(new Date().getTime() / 1000) + (60 * 60 * 24); // Same reasoning as before.
+    const currentDatePlusOne = Math.floor(new Date().getTime() / 1000) + (60 * 60 * 24); // Same reasoning as before.
     if (endDate > currentDatePlusOne || startDate > currentDatePlusOne) {
         alert("You cannot enter a date that is in the future.")
         return;
     }
 
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
-    const [weatherData, pollutionData] = await response.json();
-    
+
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
-    if (response.status == 400) {
+    if (response.status !== 200) {
         alert("Bad request. Please change the dates entered.")
         return;
-    } else if (weatherData.length == 0 || pollutionData.length == 0) {
-        alert("Error with the latitude and longitude.") // TODO
-        return;
-    }
+    };
 
     const [weatherData, pollutionData] = await response.json();
+    if (weatherData.length == 0 || pollutionData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    };
+
     displayHistoricalData(weatherData, pollutionData);
 }
 
