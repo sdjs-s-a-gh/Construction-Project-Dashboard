@@ -93,17 +93,15 @@ async function getCurrentWeather(latitude, longitude) {
     const weatherWind = document.getElementById("weather-wind");
 
     // TODO: Add try-catch code to deal with erroneous fetches.
-    const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
+    const data = await fetchJSON(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
 
-    if (response.status !== 200) {
+    if (data === null) {
         weatherDescription.innerText = "Error fetching current weather details."
         weatherTemp.innerText = "-";
         weatherWind.innerText = "-";
         weatherHumidity.innerText = "-";
         return null;
     }
-
-    const data = await response.json();
 
     // Extract the data for the resource rules and to display to the screen.
     const weatherID = data.weather[0].id; // The type of weather (rain, snow, clear)
@@ -127,8 +125,9 @@ async function getCurrentPollutionData(latitude, longitude) {
     const pm10 = document.getElementById("pollution-particulate-10");
     const pm2_5 = document.getElementById("pollution-particulate-2_5");
 
-    const response = await fetch(`api/api.php?type=air_pollution_current&latitude=${latitude}&longitude=${longitude}`);
-    if (response.status !== 200) {
+    const data = await fetchJSON(`api/api.php?type=air_pollution_current&latitude=${latitude}&longitude=${longitude}`);
+
+    if (data === null) {
         airQualityIndex.innerText = "Error fetching current pollution details."
         carbonMinoxide.innerText = "-";
         nitrogenDioxide.innerText = "-";
@@ -136,9 +135,7 @@ async function getCurrentPollutionData(latitude, longitude) {
         pm2_5.innerText = "-";
         return null;
     }
-
-    const data = await response.json();
-
+    console.log("this has happened.")
     console.log(data);
     // Display the CO2 data into the HTML file.
     const airQuality = data.list[0].main.aqi;
@@ -160,7 +157,6 @@ async function getCurrentPollutionData(latitude, longitude) {
 function formatPollutionData(pollutionData, dateFormat) {
     let tableRows = "";
     let lastDay = "";
-    const now = dateFns.format(new Date(), "dd/MM/yyyy")
 
     pollutionData.list.forEach((element) => {
         const dateTime = dateFns.format(new Date(element.dt * 1000), dateFormat);
@@ -175,7 +171,7 @@ function formatPollutionData(pollutionData, dateFormat) {
         }
 
         tableRows += `
-            <tr id=${element.dt}>
+            <tr id="${element.dt}">
                 <td>${dateTime}</td>
                 <td>${formatAirQuality(element.main.aqi)}</td>
                 <td>${element.components.co}</td>
@@ -249,14 +245,14 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
     const startDate = now - 86400; // 24 hours ago given in seconds (86400).
     const endDate = now;
 
-    const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
+    const data = await fetchJSON(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
 
     let weatherData = null;
     let pollutionData = null;
 
-    if (response.status == 200) {
-        [weatherData, pollutionData] = await response.json();
-    }
+    if (data !== null) {
+        [weatherData, pollutionData] = data;
+    };
 
     console.log(weatherData);
     console.log(`Latitude: ${latitude}; Longitude: ${longitude}`);
@@ -265,16 +261,13 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
 }
 
 async function getFutureWeatherData(latitude, longitude, days = 5) {
-    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
+    const weatherData = await fetchJSON(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
 
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
-    if (response.status !== 200) {
+    if (weatherData === null) {
         alert("Error fetching weather data for the days selected.")
         return;
-    }
-
-    const weatherData = await response.json();
-    if (weatherData.length == 0) {
+    } else if (weatherData.length == 0) {
         alert("Error with the latitude and longitude.")
         return;
     }
@@ -285,13 +278,15 @@ async function getFutureWeatherData(latitude, longitude, days = 5) {
 }
 
 async function getFuturePollutionData(latitude, longitude) {
-    const response = await fetch(`api/api.php?type=pollution_future&latitude=${latitude}&longitude=${longitude}`);
-    const pollutionData = await response.json();
-
-    console.log(pollutionData);
-
+    const data = await fetchJSON(`api/api.php?type=pollution_future&latitude=${latitude}&longitude=${longitude}`);
     const futurePollutionData = document.getElementById("future-pollution-data");
-    futurePollutionData.innerHTML = formatPollutionData(pollutionData, "dd/MM/yyyy");
+
+    if (data === null) {
+        futurePollutionData.innerHTML = "Error fetching future pollution data.";
+        return;
+    }
+
+    futurePollutionData.innerHTML = formatPollutionData(data, "dd/MM/yyyy");
 }
 
 async function handleHistoricDateSelection() {
@@ -339,16 +334,16 @@ async function handleHistoricDateSelection() {
         return;
     }
 
-    const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
+    const data = await fetchJSON(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
 
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
-    if (response.status !== 200) {
+    if (data === null) {
         alert("Bad request. Please change the dates entered.")
         return;
     };
 
-    const [weatherData, pollutionData] = await response.json();
-    if (weatherData.length == 0 || pollutionData.length == 0) {
+    const [weatherData, pollutionData] = data;
+    if (weatherData.list.length == 0 || pollutionData.list.length == 0) {
         alert("Error with the latitude and longitude.") // TODO
         return;
     };
@@ -363,7 +358,6 @@ async function handlePollutionSelection() {
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-pollution-date").value;
     const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
-    const now = Math.floor(new Date().getTime() / 1000);
     const currentDate = Math.floor(new Date().getTime() / 1000);
     const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)); // Rounds upwards as the 'now' variable gets the current time and not the start of the day.
 
@@ -414,7 +408,7 @@ async function handleFutureWeatherSelection() {
     };
 
     // TODO: (Check this comment) Use the pre-existing weather fetch since it can be generalised to change the days.
-    getFutureWeatherData(latitude, longitude, differenceInDays);
+    await getFutureWeatherData(latitude, longitude, differenceInDays);
 }
 
 /**
@@ -429,4 +423,19 @@ function getProjectGeolocation() {
     const longitude = selectedProject.dataset.longitude;
 
     return [latitude, longitude]
+}
+
+async function fetchJSON(url) {
+    try {
+        const response = await fetch(url);
+
+        if (response.status !== 200) {
+            return null;
+        }
+
+        return response.json();
+
+    } catch (error) {
+        return null;
+    }
 }
