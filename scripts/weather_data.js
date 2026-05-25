@@ -1,14 +1,6 @@
-// TODO: Remove; this is just here for testing
-latitude = "54.191";
-longitude = "-1.161";
+
 
 document.addEventListener("DOMContentLoaded", () => {
-    // TODO: Remove
-    getCurrentWeather(latitude, longitude);
-    getCurrentPollutionData(latitude, longitude);
-    getHistoricalEnvironmentData(latitude, longitude);
-    getFuturePollutionData(latitude, longitude);
-    getFutureWeatherData(latitude, longitude);
 
     document.getElementById("btn-historical-date").addEventListener(
         "click",
@@ -90,7 +82,6 @@ async function getCurrentWeather(latitude, longitude) {
     const weatherHumidity = document.getElementById("weather-humidity");
     const weatherWind = document.getElementById("weather-wind");
 
-    // TODO: Add try-catch code to deal with erroneous fetches.
     const data = await fetchJSON(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
 
     if (data === null) {
@@ -291,9 +282,7 @@ async function handleHistoricDateSelection() {
     event.preventDefault();
 
     // Retrieve the geolocation for the currently-selected project.
-    //const [latitude, longitude] = getProjectGeolocation();
-    // TODO: remove
-    const [latitude, longitude] = ["54.191", "-1.161"];
+    const [latitude, longitude] = getProjectGeolocation();
 
     console.log(latitude);
     console.log(longitude);
@@ -386,9 +375,7 @@ async function handlePollutionSelection() {
 async function handleFutureWeatherSelection() {
     event.preventDefault();
 
-    //const [latitude, longitude] = getProjectGeolocation();
-    // TODO: remove
-    const [latitude, longitude] = ["54.191", "-1.161"];
+    const [latitude, longitude] = getProjectGeolocation();
 
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-weather-date").value;
