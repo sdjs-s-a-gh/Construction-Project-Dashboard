@@ -133,7 +133,6 @@ async function getCurrentPollutionData(latitude, longitude) {
         return null;
     };
 
-    console.log(data);
     // Display the CO2 data into the HTML file.
     const airQuality = data.list[0].main.aqi;
     airQualityIndex.innerText = formatAirQuality(airQuality);
@@ -251,8 +250,6 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
         [weatherData, pollutionData] = data;
     };
 
-    console.log(weatherData);
-    console.log(`Latitude: ${latitude}; Longitude: ${longitude}`);
 
     displayHistoricalData(weatherData, pollutionData);
 }
@@ -293,9 +290,6 @@ async function handleHistoricDateSelection() {
     //const [latitude, longitude] = getProjectGeolocation();
     // TODO: remove
     const [latitude, longitude] = ["54.191", "-1.161"];
-
-    console.log(latitude);
-    console.log(longitude);
 
     // Get the date values from HTML.
     const startHTMLValue = document.getElementById("start-date").value;
@@ -395,7 +389,6 @@ async function handleFutureWeatherSelection() {
     const currentDate = Math.floor(Date.now() / 1000);
     const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24));
 
-    console.log(forecastDate);
     if (forecastDate <= currentDate) {
         alert("You cannot enter a date prior to today.");
         return;

@@ -53,7 +53,6 @@ async function updateProjectDetails(projectID, title, latitude, longitude) {
  * @param {Number} longitude The longitude of the selected project's location.
  */
 async function setProjectConditions(latitude, longitude, projectResources) {
-    console.log(latitude, longitude)
     const [weatherDescription, windSpeed, weatherID] = await getCurrentWeather(latitude, longitude);
     const airQuality = await getCurrentPollutionData(latitude, longitude);
     const isHighWind = windSpeed > 20;
