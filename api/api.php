@@ -13,7 +13,7 @@ $database = new Database(
 );
 
 $azureKeyVault = new AzureKeyVault($ENV);
-$openWeatherApiKey = $azureKeyVault->getSecret("kv6012-keyvault-d56e8", "OpenWeatherAPIKey");
+$openWeatherApiKey = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "OpenWeatherAPIKey");
 
 // Get the endpoint target
 $endpointTarget = $request->getQueryParameters()["type"];

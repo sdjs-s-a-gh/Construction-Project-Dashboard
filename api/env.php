@@ -11,7 +11,7 @@
  */
 return [
     "TENANT_ID" => "e757cfdd-1f35-4457-af8f-7c9c6b1437e3",
-    "CLIENT_ID" => "a9e52915-1bc4-46a3-9be9-bf1cbf9bfaa3",
-    "CLIENT_SECRET" => "VT68Q~g6GaO8h-y7_.Z~--ioDcD.ujVRvRBFxdrI",
-    "ALLOWED_ORIGIN" => "http://kv6012-workshops.switzerlandnorth.cloudapp.azure.com"
+    "CLIENT_ID" => "87857e0e-aa97-457b-ab75-4450fc2e6128",
+    "CLIENT_SECRET" => "PXw8Q~bpRl_9UQplCWH2VB.BNVrJ3LK.SWLG_cK-",
+    "ALLOWED_ORIGIN" => "http://kv6012-dev-constructiondashboard.switzerlandnorth.cloudapp.azure.com/"
 ];
