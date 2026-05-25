@@ -95,10 +95,14 @@ async function getCurrentWeather(latitude, longitude) {
     // TODO: Add try-catch code to deal with erroneous fetches.
     const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
 
-    // if (response.status !== 200) {
-        
-    //     return;
-    // }
+    if (response.status !== 200) {
+        weatherDescription.innerText = "Error fetching current weather details."
+        weatherTemp.innerText = "-";
+        weatherWind.innerText = "-";
+        weatherHumidity.innerText = "-";
+        return null;
+    }
+
     const data = await response.json();
 
     // Extract the data for the resource rules and to display to the screen.
@@ -111,8 +115,6 @@ async function getCurrentWeather(latitude, longitude) {
     weatherDescription.innerHTML = formatWeatherDescription(description, weatherID);
     weatherTemp.innerText = temperature;
     weatherWind.innerText = windSpeed;
-
-    // Additional details.
     weatherHumidity.innerText = data.main.humidity;
 
     return [description, windSpeed, weatherID];
@@ -126,6 +128,15 @@ async function getCurrentPollutionData(latitude, longitude) {
     const pm2_5 = document.getElementById("pollution-particulate-2_5");
 
     const response = await fetch(`api/api.php?type=air_pollution_current&latitude=${latitude}&longitude=${longitude}`);
+    if (response.status !== 200) {
+        airQualityIndex.innerText = "Error fetching current pollution details."
+        carbonMinoxide.innerText = "-";
+        nitrogenDioxide.innerText = "-";
+        pm10.innerText = "-";
+        pm2_5.innerText = "-";
+        return null;
+    }
+
     const data = await response.json();
 
     console.log(data);
@@ -239,7 +250,7 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
     const endDate = now;
 
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
-    
+
     let weatherData = null;
     let pollutionData = null;
 
@@ -264,7 +275,7 @@ async function getFutureWeatherData(latitude, longitude, days = 5) {
 
     const weatherData = await response.json();
     if (weatherData.length == 0) {
-        alert("Error with the latitude and longitude.") // TODO
+        alert("Error with the latitude and longitude.")
         return;
     }
 
@@ -369,7 +380,7 @@ async function handlePollutionSelection() {
     // choose the number of days to forecast), remove the days out of range in the table.
     document.querySelectorAll("#future-pollution-data tr").forEach(row => {
         // Get the date of the cell to check whether it needs to be hidden.
-        const dateCell = row.id;
+        const dateCell = Number(row.id);
 
         if (dateCell > forecastDate) {
             // Hide the row

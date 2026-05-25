@@ -27,7 +27,7 @@ $endpointTarget = $request->getQueryParameters()["type"];
 try {
     switch ($endpointTarget) {
         case "weather_current":
-            $data = handleWeatherCurrent($request, $openWeatherApiKey);
+            $data = handleWeatherCurrent($request, $openWeatherApiKey);            
             break;
         case "air_pollution_current":
             $data = handlePollutionCurrent($request, $openWeatherApiKey);
