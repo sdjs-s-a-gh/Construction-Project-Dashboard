@@ -32,7 +32,7 @@ async function updateProjectDetails(projectID, title, latitude, longitude) {
         projectResources.push(projectInstance.resource_type);
     })
 
-    projectResourcesHTML.innerHTML = projectResources;
+    projectResourcesHTML.innerHTML = projectResources.join(", ");
 
     // Set the conditions for the project about which equipment is NOT to be used.
     await setProjectConditions(latitude, longitude, projectResources);
