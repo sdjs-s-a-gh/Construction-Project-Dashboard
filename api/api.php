@@ -9,16 +9,16 @@ $request = new Request();
 $azureKeyVault = new AzureKeyVault($ENV);
 $openWeatherApiKey = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "OpenWeatherAPIKey");
 
-$databaseServer = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseServerName");
-$databaseName = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseName");
-$databaseUID = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseUserID");
-$databasePWD = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabasePassword"). "error"; // TODO: remove the error.
-$database = new Database(
-    $databaseServer,
-    $databaseName,
-    $databaseUID,
-    $databasePWD
-);
+// $databaseServer = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseServerName");
+// $databaseName = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseName");
+// $databaseUID = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabaseUserID");
+// $databasePWD = $azureKeyVault->getSecret("kv6012-con-dbd-kv", "DatabasePassword"."errror"); // TODO: remove this error
+// $database = new Database(
+//     $databaseServer,
+//     $databaseName,
+//     $databaseUID,
+//     $databasePWD
+// );
 
 // Get the endpoint target
 $endpointTarget = $request->getQueryParameters()["type"];

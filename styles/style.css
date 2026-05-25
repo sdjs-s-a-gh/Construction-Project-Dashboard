@@ -41,26 +41,6 @@ footer {
     margin-top: 20px;
 }
 
-#environment-analytics {
-    display: flex;
-    flex-direction: column;
-    gap: 40px; /* Vertical gap between historical and future sections */
-}
-
-#historical,
-#future {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: start;
-}
-
-#historical h2,
-#historical form,
-#future h2 {
-    grid-column: 1 / -1;
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -92,22 +72,6 @@ tr:hover {
     align-items: start;
 }
 
-#project-details-panel {
-    display: grid;
-    grid-template-rows: auto auto auto auto; /* Creates three vertical rows to house the project information */
-    gap: 12px;
-}
-
-#project-details-panel p {
-    font-size: 12px;
-    margin: 2px 0;
-}
-
-#project-details-panel h2,
-#project-details-panel h3 {
-    margin: 4px 0;
-}
-
 #project-table {
     width: 100%;
 }
@@ -116,4 +80,44 @@ tr:hover {
     height: 400px;
     width: 100%;
     border: 1px solid black;
+}
+
+#project-details-panel {
+    display: grid;
+    /* Creates four vertical rows to house the project information and subsequent recommendation */
+    grid-template-rows: auto auto auto auto;    
+    gap: 12px;
+}
+
+#project-details-panel p {
+    font-size: 12px;
+    margin: 4px 0;
+}
+
+#project-details-panel h2,
+#project-details-panel h3 {
+    margin: 3px 0;
+}
+
+#environment-analytics {
+    display: flex;
+    flex-direction: column;
+    /* Vertical gap between historical and future sections */
+    gap: 40px;    
+}
+
+#historical,
+#future {
+    display: grid;
+    /* Align the weather and pollution tables alongside each other.*/
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+    row-gap: 8px;
+}
+
+#historical h2,
+#historical form,
+#future h2 {
+    grid-column: 1 / -1;
+    margin: 2px 0;
 }
