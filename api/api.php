@@ -120,9 +120,9 @@ function handleWeatherCurrent(Request $request, string $apiKey)
 }
 
 /**
- * Returns the weather data within a certain period of time.
+ * Returns the weather and pollution data within a certain period of time.
  */
-function handleWeatherHistorical(Request $request, string $apiKey)
+function handleEnvironmentHistorical(Request $request, string $apiKey)
 {
     $queryParameters = $request->getQueryParameters();
     validateQueryParameters($queryParameters, ["latitude", "longitude", "start_date", "end_date"]);
@@ -132,20 +132,23 @@ function handleWeatherHistorical(Request $request, string $apiKey)
     $startDate = $queryParameters["start_date"];
     $endDate = $queryParameters["end_date"];
 
-    $url = "https://history.openweathermap.org/data/2.5/history/city?lat=$latitude&lon=$longitude&type=hour&start=$startDate&end=$endDate&units=metric&appid=$apiKey";
+    $weatherURL = "https://history.openweathermap.org/data/2.5/history/city?lat=$latitude&lon=$longitude&type=hour&start=$startDate&end=$endDate&units=metric&appid=$apiKey";
+    $pollutionURL = "http://api.openweathermap.org/data/2.5/air_pollution/history?lat=$latitude&lon=$longitude&start=$startDate&end=$endDate&units=metric&appid=$apiKey";
 
     $options = [
         "http" => [
             "ignore_errors" => true
         ]
-    ]; //
+    ];
 
     $context = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
+    $weatherResponse = file_get_contents($weatherURL, false, $context);
+    $pollutionResponse = file_get_contents($pollutionURL, false, $context);
 
-    $response = json_decode($response, true);
+    $weatherResponse = json_decode($weatherResponse, true);
+    $pollutionResponse = json_decode($pollutionResponse, true);
 
-    return $response;
+    return [$weatherResponse, $pollutionResponse];
 }
 
 function handlePollutionCurrent(Request $request, string $apiKey)
@@ -157,6 +160,56 @@ function handlePollutionCurrent(Request $request, string $apiKey)
     $longitude = $queryParameters["longitude"];
 
     $url = "https://api.openweathermap.org/data/2.5/air_pollution?lat=$latitude&lon=$longitude&appid=$apiKey";
+
+    $options = [
+        "http" => [
+            "ignore_errors" => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
+    $response = json_decode($response, true);
+
+    return $response;
+}
+
+/**
+ * Returns the weather for up-to the next 8 days.
+ */
+function handleWeatherFuture(Request $request, string $apiKey)
+{
+    $queryParameters = $request->getQueryParameters();
+    validateQueryParameters($queryParameters, ["latitude", "longitude", "days"]);
+
+    $latitude = $queryParameters["latitude"];
+    $longitude = $queryParameters["longitude"];
+    $days = $queryParameters["days"];
+
+    $url = "https://api.openweathermap.org/data/2.5/forecast/daily?lat=$latitude&lon=$longitude&cnt=$days&units=metric&appid=$apiKey";
+
+    $options = [
+        "http" => [
+            "ignore_errors" => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = file_get_contents($url, false, $context);
+    $response = json_decode($response, true);
+
+    return $response;
+}
+
+function handlePollutionFuture(Request $request, string $apiKey)
+{
+    $queryParameters = $request->getQueryParameters();
+    validateQueryParameters($queryParameters, ["latitude", "longitude"]);
+
+    $latitude = $queryParameters["latitude"];
+    $longitude = $queryParameters["longitude"];
+
+    $url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=$latitude&lon=$longitude&cnt=$days&units=metric&appid=$apiKey";
 
     $options = [
         "http" => [
@@ -225,11 +278,17 @@ try {
         case "weather_current":
             $data = handleWeatherCurrent($request, $openWeatherApiKey);
             break;
-        case "weather_historical":
-            $data = handleWeatherHistorical($request, $openWeatherApiKey);
-            break;
         case "air_pollution_current":   // TODO: For some reason, this is broken. I don't think it is.
             $data = handlePollutionCurrent($request, $openWeatherApiKey);
+            break;
+        case "environment_historical":
+            $data = handleEnvironmentHistorical($request, $openWeatherApiKey);
+            break;
+        case "weather_future":
+            $data = handleWeatherFuture($request, $openWeatherApiKey);
+            break;
+        case "pollution_future":
+            $data = handlePollutionFuture($request, $openWeatherApiKey);
             break;
         case "project-list":
             $data = handleProjectList($database);
