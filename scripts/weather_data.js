@@ -134,8 +134,8 @@ async function getCurrentPollutionData(latitude, longitude) {
         pm10.innerText = "-";
         pm2_5.innerText = "-";
         return null;
-    }
-    console.log("this has happened.")
+    };
+
     console.log(data);
     // Display the CO2 data into the HTML file.
     const airQuality = data.list[0].main.aqi;
@@ -262,18 +262,17 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
 
 async function getFutureWeatherData(latitude, longitude, days = 5) {
     const weatherData = await fetchJSON(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
+    const futureWeatherData = document.getElementById("future-weather-data");
 
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
     if (weatherData === null) {
-        alert("Error fetching weather data for the days selected.")
+        futureWeatherData.innerHTML = "Error fetching future weather data.";
         return;
     } else if (weatherData.length == 0) {
         alert("Error with the latitude and longitude.")
         return;
     }
 
-    console.log(weatherData);
-    const futureWeatherData = document.getElementById("future-weather-data");
     futureWeatherData.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy");
 }
 
@@ -397,7 +396,7 @@ async function handleFutureWeatherSelection() {
     const forecastDateHTML = document.getElementById("future-weather-date").value;
     const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000); 
     const currentDate = Math.floor(Date.now() / 1000);
-    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)); // Rounds upwards.
+    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24));
 
     console.log(forecastDate);
     if (forecastDate <= currentDate) {
