@@ -1,16 +1,18 @@
-// Get Variables from the HTML file
-const weatherDescription = document.getElementById("weather-description")
-const weatherTemp = document.getElementById("weather-temp")
-const weatherHumidity = document.getElementById("weather-humidity")
-const weatherWind = document.getElementById("weather-wind")
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("btn-historical-date").addEventListener(
+        "click",
+        handleHistoricDateSelection
+    )
+    document.getElementById("btn-future-pollution-date").addEventListener(
+        "click",
+        handlePollutionSelection
+    )
+    document.getElementById("btn-future-weather-date").addEventListener(
+        "click",
+        handleFutureWeatherSelection
+    )
 
-const airQualityIndex = document.getElementById("pollution-air-quality")
-const carbonMinoxide = document.getElementById("pollution-carbon-monixide")
-const nitrogenMinoxide = document.getElementById("pollution-nitrogen-monoxide")
-const nitrogenDioxide = document.getElementById("pollution-nitrogen-dioxide")
-const ozone = document.getElementById("pollution-ozone")
-const sulphurDioxide = document.getElementById("pollution-sulphur-dioxide")
-const ammonia = document.getElementById("pollution-ammonia")
+})
 
 /**
  * Returns the description of the weather with a corresponding visual icon.
@@ -55,7 +57,30 @@ function formatWeatherDescription(weatherDescription, weatherID) {
     return weatherDescription;
 }
 
+function formatAirQuality(airQualityIndex) {
+    // Map each index to its corresponding description.
+    aqiDictionary = {
+        1: "Good",
+        2: "Fair",
+        3: "Moderate",
+        4: "Poor",
+        5: "Very Poor"
+    }
+
+    // Get the description of the AQI from the dictionary.
+    aqiDescription = aqiDictionary[airQualityIndex];
+
+    // Append the description to the string to return.
+    airQualityIndex = `${airQualityIndex} (${aqiDescription})`
+    return airQualityIndex
+}
+
 async function getCurrentWeather(latitude, longitude) {
+    const weatherDescription = document.getElementById("weather-description");
+    const weatherTemp = document.getElementById("weather-temp");
+    const weatherHumidity = document.getElementById("weather-humidity");
+    const weatherWind = document.getElementById("weather-wind");
+
     // TODO: Add try-catch code to deal with erroneous fetches.
     const response = await fetch(`api/api.php?type=weather_current&latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
@@ -77,103 +102,115 @@ async function getCurrentWeather(latitude, longitude) {
     return [description, windSpeed, weatherID];
 }
 
-function formatAirQuality(airQualityIndex) {
-    // Map each index to its corresponding description.
-    aqiDictionary = {
-        1: "Good",
-        2: "Fair",
-        3: "Moderate",
-        4: "Poor",
-        5: "Very Poor"
-    }
-
-    // Get the description of the AQI from the dictionary.
-    aqiDescription = aqiDictionary[airQualityIndex];
-
-    // Append the description to the string to return.
-    airQualityIndex = `${airQualityIndex} (${aqiDescription})`
-    return airQualityIndex
-}
-
 async function getCurrentPollutionData(latitude, longitude) {
+    const airQualityIndex = document.getElementById("pollution-air-quality");
+    const carbonMinoxide = document.getElementById("pollution-carbon-monixide");
+    const nitrogenDioxide = document.getElementById("pollution-nitrogen-dioxide");
+    const pm10 = document.getElementById("pollution-particulate-10");
+    const pm2_5 = document.getElementById("pollution-particulate-2_5");
+
     const response = await fetch(`api/api.php?type=air_pollution_current&latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
 
     console.log(data);
     // Display the CO2 data into the HTML file.
-    airQuality = data.list[0].main.aqi;
+    const airQuality = data.list[0].main.aqi;
     airQualityIndex.innerText = formatAirQuality(airQuality);
     carbonMinoxide.innerText = data.list[0].components.co;
-    ammonia.innerText = data.list[0].components.nh3;
-    nitrogenMinoxide.innerText = data.list[0].components.no;
     nitrogenDioxide.innerText = data.list[0].components.no2;
-    ozone.innerText = data.list[0].components.o3;
-    sulphurDioxide.innerText = data.list[0].components.so2;
-
-    // Particulates:
-    // carbonMinoxide.innerText = data.list[0].components.pm2_5;
-    // carbonMinoxide.innerText = data.list[0].components.pm10;
-
-    // Currently, display the details of the current timestamp statically. In the future, this
-    // will have to be made dynamic to avoid hardcoding multiple indexes.
-    // TODO    
+    pm10.innerText = data.list[0].components.pm10;
+    pm2_5.innerText = data.list[0].components.pm2_5;
 
     return airQuality;
 }
 
-function displayHistoricalData(weatherData, pollutionData) {
-    const historicalWeather = document.getElementById("historical-weather");
-    const historicalPollution = document.getElementById("historical-pollution");
-
+/**
+ * Formats pollution data to be updated into an HTML element.
+ * 
+ * @param {Object} pollutionData The JSON data to be input into the table.
+ * @param {string} dateFormat The date format used to index each row.
+ */
+function formatPollutionData(pollutionData, dateFormat) {
     let tableRows = "";
-    let dates = new Set();
-    console.log(weatherData)
-    weatherData.list.forEach((element) => {
-        // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy HH:mm");
-        tableRows += `
-            <tr>
-                <td>${dateTime}</td>
-                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
-                <td>${element.main.temp}</td>
-                <td>${element.wind.speed}</td>
-            </tr>
-        `
-        dates.add(dateTime);
-    });
+    let lastDay = "";
+    const now = dateFns.format(new Date(), "dd/MM/yyyy")
 
-    historicalWeather.innerHTML = tableRows;
-
-    tableRows = "";
-    let dates2 = new Set();
-    console.log(pollutionData)
     pollutionData.list.forEach((element) => {
-        // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy HH:mm");
+        const dateTime = dateFns.format(new Date(element.dt * 1000), dateFormat);
+
+        // Only trigger when formatting future data.
+        if (dateFormat === "dd/MM/yyyy") {
+            // Since the API is hourly and there is no way to change it, ignore instances of the same day.
+            if (dateTime === lastDay) return;
+
+            // Advance the date forward.
+            lastDay = dateTime;
+        }
+
         tableRows += `
             <tr>
                 <td>${dateTime}</td>
                 <td>${formatAirQuality(element.main.aqi)}</td>
                 <td>${element.components.co}</td>
                 <td>${element.components.no2}</td>
+                <td>${element.components.pm10}</td>
+                <td>${element.components.pm2_5}</td>
             </tr>
         `
+    })
 
-        dates2.add(dateTime);
+    return tableRows;
+}
+
+/**
+ * Formats weather data to be updated into an HTML element.
+ * 
+ * @param {Object} weatherData The JSON data to be input into the table.
+ * @param {string} dateFormat The date format used to index each row.
+ */
+function formatWeatherData(weatherData, dateFormat) {
+    let tableRows = "";
+
+    weatherData.list.forEach((element) => {
+        // Convert the date/time from the JSON into a more readable format.
+        dateTime = dateFns.format(new Date(element.dt * 1000), dateFormat);
+        tableRows += `
+            <tr>
+                <td>${dateTime}</td>
+                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
+        `
+        // Since the future and historic data APIs differ in their JSON, choose which 
+        // table rows to change depending on the API used.
+        if (dateFormat === "dd/MM/yyyy") {
+            tableRows += `
+                <td>${element.temp.min}</td>
+                <td>${element.temp.max}</td>
+                <td>${element.speed}</td>
+            </tr>`
+        } else {
+            tableRows += `
+                <td>${element.main.temp}</td>
+                <td>${element.wind.speed}</td>
+            </tr>`
+        }
     });
 
-    historicalPollution.innerHTML = tableRows;
-
-    console.log(dates);
-    console.log(dates2);
-    console.log(dates.difference(dates2))
+    return tableRows;
 }
+
+function displayHistoricalData(weatherData, pollutionData) {
+    const historicalWeather = document.getElementById("historical-weather");
+    const historicalPollution = document.getElementById("historical-pollution");
+
+    historicalWeather.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy HH:mm");
+    historicalPollution.innerHTML = formatPollutionData(pollutionData, "dd/MM/yyyy HH:mm");
+};
 
 /**
  * Sets the historical data to 24 hours ago by default.
  */
 async function getHistoricalEnvironmentData(latitude, longitude) {
-    // Convert current time to a UNIX timestamp.
+    // Convert current time to a UNIX timestamp. The following code is adapted from Week 8 Workshop, Part 4.
     const now = Math.floor(Date.now() / 1000);
 
     const startDate = now - 86400; // 24 hours ago given in seconds (86400).
@@ -183,35 +220,18 @@ async function getHistoricalEnvironmentData(latitude, longitude) {
     const [weatherData, pollutionData] = await response.json();
 
     console.log(weatherData);
-    console.log(`Latitude: ${latitude}; Longitude: ${longitude}`)
+    console.log(`Latitude: ${latitude}; Longitude: ${longitude}`);
+
     displayHistoricalData(weatherData, pollutionData);
 }
 
-async function getFutureWeatherData(latitude, longitude) {
-    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=4`);
+async function getFutureWeatherData(latitude, longitude, days = 5) {
+    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${days}`);
     const weatherData = await response.json();
 
     console.log(weatherData);
-
     const futureWeatherData = document.getElementById("future-weather-data");
-
-    let tableRows = "";
-    weatherData.list.forEach((element) => {
-        // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
-
-        tableRows += `
-            <tr>
-                <td>${dateTime}</td>
-                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
-                <td>${element.temp.min}</td>
-                <td>${element.temp.max}</td>
-                <td>${element.speed}</td>
-            </tr>
-        `
-    });
-
-    futureWeatherData.innerHTML = tableRows;
+    futureWeatherData.innerHTML = formatWeatherData(weatherData, "dd/MM/yyyy");
 }
 
 async function getFuturePollutionData(latitude, longitude) {
@@ -221,43 +241,17 @@ async function getFuturePollutionData(latitude, longitude) {
     console.log(pollutionData);
 
     const futurePollutionData = document.getElementById("future-pollution-data");
-    // Get every object in the data.list parent object.
-
-    let tableRows = "";
-    let lastDay = "";
-
-    const now = dateFns.format(new Date(), "dd/MM/yyyy")
-    pollutionData.list.forEach((element) => {
-        // Ignore today's date since that isn't
-        // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
-
-        // Since the API is hourly and there is no way to change it, ignore instances of the same day.
-        if (dateTime === lastDay) return;
-
-        // Advance the date forward.
-        lastDay = dateTime;
-        tableRows += `
-            <tr id=${element.dt}>
-                <td>${dateTime}</td>
-                <td>${formatAirQuality(element.main.aqi)}</td>
-                <td>${element.components.co}</td>
-                <td>${element.components.no2}</td>
-            </tr>
-        `
-    });
-
-    futurePollutionData.innerHTML = tableRows;
+    futurePollutionData.innerHTML = formatPollutionData(pollutionData, "dd/MM/yyyy");
 }
 
-
-async function handleDateSelection() {
+async function handleHistoricDateSelection() {
     // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
     event.preventDefault();
 
-    const selectedProject = document.getElementById("project-selected")
-    const latitude = selectedProject.dataset.latitude;
-    const longitude = selectedProject.dataset.longitude;
+    // Retrieve the geolocation for the currently-selected project.
+    const [latitude, longitude] = getProjectGeolocation();
+    console.log(latitude);
+    console.log(longitude);
 
     // Get the date values from HTML.
     const startHTMLValue = document.getElementById("start-date").value;
@@ -270,7 +264,13 @@ async function handleDateSelection() {
 
     // Convert the dates to a UNIX timestamp
     const startDate = Math.floor(new Date(startHTMLValue).getTime() / 1000);
-    const endDate = Math.floor(new Date(endHTMLValue).getTime() / 1000) + (60 * 60 * 24);   // Needs to add 1 day to ensure all the times past midnight are included.
+
+    // The endDate must add an additional day since it will otherwise only have data from midnight to 1am.
+    // Then 2 hours must be taken away - one to return to the previous day and the other is because of daylight savings adding another hour.
+    const endDate = Math.floor(new Date(endHTMLValue).getTime() / 1000) + ((60 * 60 * 24) - (60 * 60 * 2));
+
+    console.log(startDate);
+    console.log(endDate)
 
     // Limit the number of days the user can choose because of the API's restrictions.
     const maxDayRange = 7;
@@ -287,19 +287,16 @@ async function handleDateSelection() {
     }
 
     const response = await fetch(`api/api.php?type=environment_historical&latitude=${latitude}&longitude=${longitude}&start_date=${startDate}&end_date=${endDate}`);
-    const [weatherData, pollutionData] = await response.json();
-
-    console.log(weatherData);
-    console.log(pollutionData);
-
     // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
     if (response.status == 400) {
         alert("Bad request. Please change the dates entered.")
         return;
     } else if (weatherData.length == 0 || pollutionData.length == 0) {
         alert("Error with the latitude and longitude.") // TODO
+        return;
     }
 
+    const [weatherData, pollutionData] = await response.json();
     displayHistoricalData(weatherData, pollutionData);
 }
 
@@ -310,6 +307,26 @@ async function handlePollutionSelection() {
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-pollution-date").value;
     const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
+    const now = Math.floor(new Date().getTime() / 1000);
+    const currentDate = Math.floor(new Date().getTime() / 1000);
+    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
+
+    if (forecastDate <= currentDate) {
+        alert("You cannot enter a date prior to today.");
+        return;
+    } else if (differenceInDays > 4) {
+        alert("You cannot enter a date more than 4 days from now.");
+        return;
+    };
+
+    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
+    if (response.status == 400) {
+        alert("Bad request. Please change the dates entered.")
+        return;
+    } else if (weatherData.length == 0 || pollutionData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    }
 
     // Since all the data is already displayed (because the Pollution API doesn't let you choose the number of days to forecast), remove the days out of range in the table.
     document.querySelectorAll("#future-pollution-data tr").forEach(row => {
@@ -323,12 +340,9 @@ async function handlePollutionSelection() {
 }
 
 async function handleFutureWeatherSelection() {
-    const selectedProject = document.getElementById("project-selected")
-    const latitude = selectedProject.dataset.latitude;
-    const longitude = selectedProject.dataset.longitude;
-
-    // Prevent the page from actually refreshing to avoid altering the URL and removing the input.
     event.preventDefault();
+
+    const [latitude, longitude] = getProjectGeolocation();
 
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-weather-date").value;
@@ -336,47 +350,36 @@ async function handleFutureWeatherSelection() {
     const currentDate = Math.floor(new Date().getTime() / 1000);
     const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
 
-    const response = await fetch(`api/api.php?type=weather_future&latitude=${latitude}&longitude=${longitude}&days=${differenceInDays}`);
-    const weatherData = await response.json();
+    if (forecastDate <= currentDate) {
+        alert("You cannot enter a date prior to today.");
+        return;
+    } else if (differenceInDays > 16) {
+        alert("You cannot enter a date more than 16 days from now.");
+        return;
+    };
 
-    console.log(weatherData);
-
-    const futureWeatherData = document.getElementById("future-weather-data");
-
-    let tableRows = "";
-    weatherData.list.forEach((element) => {
-        // Convert the date/time from the JSON into a more readable format.
-        dateTime = dateFns.format(new Date(element.dt * 1000), "dd/MM/yyyy");
-
-        tableRows += `
-            <tr>
-                <td>${dateTime}</td>
-                <td>${formatWeatherDescription(element.weather[0].description, element.weather[0].id)}</td>
-                <td>${element.temp.min}</td>
-                <td>${element.temp.max}</td>
-                <td>${element.speed}</td>
-            </tr>
-        `
-    });
-
-    futureWeatherData.innerHTML = tableRows;
+    // Fallback if the error validation doesn't work, so the user is at least made aware something is wrong.
+    if (response.status == 400) {
+        alert("Bad request. Please change the dates entered.")
+        return;
+    } else if (weatherData.length == 0 || pollutionData.length == 0) {
+        alert("Error with the latitude and longitude.") // TODO
+        return;
+    }
+    // TODO: (Check this comment) Use the pre-existing weather fetch since it can be generalised to change the days.
+    getFutureWeatherData(latitude, longitude, differenceInDays);
 }
 
+/**
+ * Returns the co-ordinates of the selected project in an array, consisting of the latitude
+ * and longitude.
+ * 
+ * @return {Array<Number, Number>} An array consisting of the latitude and longitude.
+ */
+function getProjectGeolocation() {
+    const selectedProject = document.getElementById("project-selected")
+    const latitude = selectedProject.dataset.latitude;
+    const longitude = selectedProject.dataset.longitude;
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("btn-historical-date").addEventListener(
-        "click",
-        handleDateSelection
-    )
-    document.getElementById("btn-future-pollution-date").addEventListener(
-        "click",
-        handlePollutionSelection
-    )
-    document.getElementById("btn-future-weather-date").addEventListener(
-        "click",
-        handleFutureWeatherSelection
-    )
-
-})
-
-
+    return [latitude, longitude]
+}

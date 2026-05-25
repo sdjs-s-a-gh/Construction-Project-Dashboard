@@ -20,24 +20,18 @@ class Response
      * the output_JSON() method.
      * 
      * @param int $statusCode The HTTP status code for the response.
-     * @param int $httpHeaders An associative array of HTTP response headers,
-     * where the key is the header name and the value is the header value.
+     * @param array<string, string> $env An associative array that represents environment
+     * variables to be able to access the allowed origin. 
      */
-    public function __construct(int $statusCode, array $httpHeaders)
+    public function __construct(int $statusCode, array $env)
     {
-        $this->outputStatusCode($statusCode);
-        $this->outputHeaders($httpHeaders);
+        // Set the HTTP status code for the response.
+        http_response_code($statusCode);
+        $allowedOrigin = $env["ALLOWED_ORIGIN"];
+        $this->outputHeaders($allowedOrigin);
     }
 
-    /**
-     * Sets the HTTP status code for the response.
-     * 
-     * @param $status_code The HTTP status code for the response.
-     */
-    private function outputStatusCode($statusCode): void
-    {
-        http_response_code($statusCode);
-    }
+
 
     /** 
      * Sets the response headers.
@@ -47,18 +41,17 @@ class Response
      * each potential response from an endpoint. Additionally, the CORS header
      * is set to allow requests ONLY from the domain
      * http://kv6012-workshops.switzerlandnorth.cloudapp.azure.com
-     * 
-     * @param array<string, string> $httpHeaders An associative array of
-     * custom response headers.
      */
-    private function outputHeaders($httpHeaders): void 
+    private function outputHeaders(string $allowedOrigin): void 
     {
         // Default headers.
         header("Content-Type: application/json");
         header("Content-language: en");
 
         // CORS-related header.
-        header("Access-Control-Allow-Origin: http://kv6012-workshops.switzerlandnorth.cloudapp.azure.com");
+        header("Access-Control-Allow-Origin: $allowedOrigin");
+
+        $httpHeaders = ["Access-Control-Allow-Methods" => "GET, OPTIONS"];
 
         // Add custom headers to the response.
         foreach ($httpHeaders as $headerName=>$headerValue) {
