@@ -4,8 +4,15 @@ addEventListener("DOMContentLoaded", () => {
     initTableAndMarkers(map, markerGroup);
 });
 
+/**
+ * Creates a map.
+ * 
+ * This function initialises the map variable for the user to interact with and view
+ * all construction projects. 
+ * @returns The map object to manipulate and add map markers.
+ */
 function initMap() {
-    // Centre the coordinates around the middle of each project.
+    // Centre the coordinates roughly in the centre of all projects.
     const centreLatLgn = [54.97874064957384, -1.6100522109054864];
 
     // Initialise the map and assign it to the div titled "map" programmatically.
@@ -22,6 +29,18 @@ function initMap() {
     return map
 }
 
+/**
+ * Creates the table of projects and places markers on the map.
+ * 
+ * This function calls the database through the backend to retrieve the list of construction
+ * projects, before creating a summary table that the user map interact with to view more
+ * information. However, any errors when fetching information will result in an error being
+ * displayed to the user.
+ * 
+ * @param {*} map The map object needed to place markers on.
+ * @param {*} markerGroup The group a marker should belong to, which could have been used
+ * to mass delete markers if this feature was implemented. * 
+ */
 async function initTableAndMarkers(map, markerGroup) {
     // Get the HTML tag that represents the table so it can be updated.
     const projectsTable = document.getElementById("project-titles");
@@ -30,12 +49,16 @@ async function initTableAndMarkers(map, markerGroup) {
     // the user to press.
     const response = await fetch(`api/api.php?type=project-list`);
 
+    // Deal with errors potentially caused with the database, such as connection problems or
+    // the database not being configured properly.
     if (response.status !== 200) {
         projectsTable.innerHTML = "Error loading the Projects.";
         return;
     }
     const data = await response.json();
 
+    // Populate the table with the information about a project. This code is adapted from that shown in 
+    // the Week 8 workshop task 9.
     let tableRows = "";
     data.forEach((project) => {
         const [latitude, longitude] = formatGeolocation(project.geolocation);
@@ -59,6 +82,8 @@ async function initTableAndMarkers(map, markerGroup) {
     // Retrieve more information about a project on-click.
     document.querySelectorAll("#project-titles tr").forEach(row => {
         row.addEventListener("click", function () {
+            // Retrieve the information from the table rather than re-accessing the 
+            // database.
             const projectID = row.id;
             const projectTitle = row.children[0].innerHTML;
             const latitude = row.dataset.latitude;
@@ -73,8 +98,7 @@ async function initTableAndMarkers(map, markerGroup) {
 };
 
 /**
- * Returns an array that represents the latitude and longitude of a given
- * geolocation string.
+ * Extracts the latitude and longitude from a geolocation.
  * 
  * @param {string} geolocation The co-ordinates of a project given as a string and
  * delimeted by a comma.  
@@ -90,6 +114,14 @@ function formatGeolocation(geolocation) {
     return [lat, lng]
 }
 
+/**
+ * Places a marker onto the map where a construction project is located.
+ *  
+ * @param {Object} project A construction project fetched from the database.
+ * @param {*} map The map object to place the marker on.
+ * @param {*} markerGroup The group the forthcoming marker belongs to.
+ * @returns 
+ */
 function createMarker(project, map, markerGroup) {
     const [latitude, longitude] = formatGeolocation(project.geolocation)
     const markerPosition = [latitude, longitude];
@@ -100,8 +132,7 @@ function createMarker(project, map, markerGroup) {
 
     marker.bindTooltip(project.title);
 
-    // TODO: Add more information to this pop-up
-    // Format the infoWindowContent for a more aesthetic view.
+    // Create a pop-up that gives a brief amount of information about a project.
     const infoWindowContent = `
     <div id=content>
         <h1>${project.title}</h1>
@@ -111,9 +142,10 @@ function createMarker(project, map, markerGroup) {
 
     marker.bindPopup(infoWindowContent);
 
-    // Append the marker to the current list.
+    // Append the marker to the current list, placing it on the map.
     markerGroup.addLayer(marker);
 
+    // Update the surrounding information about a project to reflect this one.
     marker.on("click", function () {
         updateProjectDetails(project.project_id, project.title, latitude, longitude);
     });

@@ -1,1 +1,1 @@
-Link to working solution: "[text](http://kv6012-dev-constructiondashboard.switzerlandnorth.cloudapp.azure.com/construction-dashboard/)"
+Link to working solution using a FQDN: "[text](http://kv6012-dev-constructiondashboard.switzerlandnorth.cloudapp.azure.com/construction-dashboard/)"

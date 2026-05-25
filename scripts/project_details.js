@@ -11,6 +11,7 @@
  * @param {Number} longitude The Longitude co-ordinate for the project.
  */
 async function updateProjectDetails(projectID, title, latitude, longitude) {
+    // Retrieve the current project selected by the user.
     const selectedProject = document.getElementById("project-selected");
     selectedProject.innerHTML = `Project Selected: ${title}`;
 
@@ -45,7 +46,7 @@ async function updateProjectDetails(projectID, title, latitude, longitude) {
 
 /**
  * Applies a set of rules to give a recommendation on which work cannot proceed based off 
- * environmental data.
+ * the current environmental data.
  * 
  * This function uses the rules given in the Projects_Database excel spreadsheet 
  * and the assignment brief.
@@ -133,5 +134,6 @@ async function setProjectConditions(latitude, longitude, projectResources) {
         recommendation += alternativeRecommendation;
     }
 
+    // Show the recommendation back to the user.
     document.getElementById("project-status").innerHTML = recommendation;
 }

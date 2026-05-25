@@ -26,22 +26,25 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 /**
- * Returns the description of the weather with a corresponding visual icon.
+ * Formats the description of the weather with a corresponding visual icon.
  * 
- * The icons used within this code is based of the weather IDs from:
+ * This function maps a weather ID of the location to a UTF-8 miscellaneous icon
+ * to more aesthetically represent the weather type.
+ * The icons used within this code are based of the weather IDs from:
  * https://openweathermap.org/weather-conditions#Weather-Condition-Codes-2
+ * Conversely, the UTF-9 icons themselves can be found at:
+ * https://www.w3schools.com/charsets/ref_utf_symbols.asp
  * 
- * @param {*} weatherDescription 
- * @param {*} weatherID 
- * @returns weatherDescription (string): The weather description formatted with an accompanying icon to visually indicate
+ * @param {String} weatherDescription The description of the weather given by the OpenWeather API.
+ * @param {Int} weatherID The ID of the current weather to match an icon to.
+ * @returns string The weather description formatted with an accompanying icon to visually indicate
  * the weather type.
  */
-function formatWeatherDescription(weatherDescription, weatherID) {
-
-    let icon = "";
-
+function formatWeatherDescription(weatherDescription, weatherID) {  
     // Get the first digit of the weather group code.
     const weatherGroup = Math.floor(weatherID / 100);
+
+    let icon = "";
 
     // As some weather types contain different icons to the rest of their weather group,
     // handle them first.
@@ -66,6 +69,14 @@ function formatWeatherDescription(weatherDescription, weatherID) {
     return weatherDescription;
 }
 
+/**
+ * Formats an Air Quality Index to a more readable description.
+ * 
+ * The codes for the AQI and their description can be found at:
+ * https://openweathermap.org/api/air-pollution?collection=environmental#concept 
+ * @param {*} airQualityIndex 
+ * @returns 
+ */
 function formatAirQuality(airQualityIndex) {
     // Map each index to its corresponding description.
     const aqiDictionary = {
