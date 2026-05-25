@@ -24,12 +24,7 @@
     <header>
         <h1>Construction Projects</h1>
     </header>
-    <nav>
-        <ul>
-            <li><a href="#">Project Dashboard</a></li>
-            <li><a href="#">About</a></li>
-        </ul>
-    </nav>
+
     <main>
         <h2>Project Dashboard</h2>
         <p>Please select a Project from the table below or the map to explore the details further details. </p>
@@ -46,35 +41,41 @@
             </div>
 
             <div id="map"></div>
-        </section>
 
-        <!-- Details for a selected Project -->
-        <section id="project-details">
-            <h2><span id="project-selected">No Project Selected</span></h2>
-            <p>Manager: <span id="project-manager"></span></p>
-            <p>Description: <span id="project-description"></span></p>
-            <p>Location: <span id="project-location"></span></p>
-            <p>Resources (Equipment Needed): <span id="project-resources"></span></p>
-            <p><span id="project-status"></span></p>
-        </section>
+            <!-- Details for a selected Project -->
+            <div id="project-details-panel">
+                <section id="project-information">
+                    <h2><span id="project-selected">No Project Selected</span></h2>
+                    <p>Manager: <span id="project-manager"></span></p>
+                    <p>Description: <span id="project-description"></span></p>
+                    <p>Location: <span id="project-location"></span></p>
+                    <p>Resources (Equipment Needed): <span id="project-resources"></span></p>
+                </section>
 
-        <!-- Specific environmental information about a selected Project -->
-        <section id="environment-overview">
-            <div id="weather-related">
-                <p>Description: <span id="weather-description"></span></p>
-                <p>Temperature: <span id="weather-temp"></span>&deg;C</p>
-                <p>Humidity: <span id="weather-humidity"></span>%</p>
-                <p>Wind speed: <span id="weather-wind"></span>mph</p>
-            </div>
+                <!-- Specific environmental information about a selected Project -->
+                <section id="weather-related">
+                    <h3>Weather Details</h3>
+                    <p>Description: <span id="weather-description"></span></p>
+                    <p>Temperature: <span id="weather-temp"></span>&deg;C</p>
+                    <p>Humidity: <span id="weather-humidity"></span>%</p>
+                    <p>Wind speed: <span id="weather-wind"></span>mph</p>
+                </section>
 
-            <div id="pollution-related">
-                <p>Air Quality Index (AQI): <span id="pollution-air-quality"></span></p>
-                <h3>Polluting Gases:</h3>
-                <p>Carbon Monoxide: <span id="pollution-carbon-monixide"></span>&micro;g/m&sup3;</p>
-                <p>Nitrogen Dioxide: <span id="pollution-nitrogen-dioxide"></span>&micro;g/m&sup3;</p>
-                <p>Particulate 10mm in Diameter (PM10): <span id="pollution-particulate-10"></span>&micro;g/m&sup3;</p>
-                <p>Particulate 1.5mm in Diameter (PM2.5): <span id="pollution-particulate-2_5"></span>&micro;g/m&sup3;
-                </p>
+                <section id="pollution-related">
+                    <h3>Environment Details</h3>
+                    <p>Air Quality Index (AQI): <span id="pollution-air-quality"></span></p>
+                    <p>Carbon Monoxide: <span id="pollution-carbon-monixide"></span>&micro;g/m&sup3;</p>
+                    <p>Nitrogen Dioxide: <span id="pollution-nitrogen-dioxide"></span>&micro;g/m&sup3;</p>
+                    <p>Particulate 10mm in Diameter (PM10): <span id="pollution-particulate-10"></span>&micro;g/m&sup3;
+                    </p>
+                    <p>Particulate 1.5mm in Diameter (PM2.5): <span
+                            id="pollution-particulate-2_5"></span>&micro;g/m&sup3;
+                    </p>
+                </section>
+
+                <section id="project-recommendation">
+                    <p><span id="project-status"></span></p>
+                </section>
             </div>
         </section>
 
@@ -82,7 +83,7 @@
         <section id="environment-analytics">
             <div id="historical">
                 <h2>Historical Data</h2>
-                <form id="date-selection">
+                <form id="historic-environmental-date-selection">
                     <label for="start-date">Start Date</label>
                     <input type="date" id="start-date" name="start-date">
 
@@ -121,15 +122,35 @@
             <div id="future">
                 <h2>Future Data</h2>
                 <div>
-                    <form id="date-selection">
-                        <label for="future-pollution-date">Days</label>
+                    <form id="future-weather-date-selection">
+                        <label for="future-weather-date">End Date</label>
+                        <input type="date" id="future-weather-date" name="future-weather-date">
+                        <button id="btn-future-weather-date"> Submit</button>
+                    </form>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Weather Description</th>
+                                <th>Min Temperature (&deg;C)</th>
+                                <th>Max Temperature (&deg;C)</th>
+                                <th>Wind Speed (mph)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="future-weather-data"></tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <form id="future-pollution-date-selection">
+                        <label for="future-pollution-date">End Date</label>
                         <input type="date" id="future-pollution-date" name="future-pollution-date">
                         <button id="btn-future-pollution-date"> Submit</button>
                     </form>
                     <table>
                         <thead>
                             <tr>
-                                <th>Time</th>
+                                <th>Date</th>
                                 <th>Air Quality Index (AQI)</th>
                                 <th>Carbon Monoxide (&micro;g/m&sup3;)</th>
                                 <th>Nitrogen Dioxide (&micro;g/m&sup3;)</th>
@@ -138,26 +159,6 @@
                             </tr>
                         </thead>
                         <tbody id="future-pollution-data"></tbody>
-                    </table>
-                </div>
-
-                <div>
-                    <form id="date-selection">
-                        <label for="future-weather-date">Days</label>
-                        <input type="date" id="future-weather-date" name="future-weather-date">
-                        <button id="btn-future-weather-date"> Submit</button>
-                    </form>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Weather Description</th>
-                                <th>Min Temperature (&deg;C)</th>
-                                <th>Max Temperature (&deg;C)</th>
-                                <th>Wind Speed (mph)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="future-weather-data"></tbody>
                     </table>
                 </div>
 
