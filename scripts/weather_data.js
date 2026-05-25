@@ -164,7 +164,7 @@ function formatPollutionData(pollutionData, dateFormat) {
         }
 
         tableRows += `
-            <tr>
+            <tr id=${element.dt}>
                 <td>${dateTime}</td>
                 <td>${formatAirQuality(element.main.aqi)}</td>
                 <td>${element.components.co}</td>
@@ -354,9 +354,8 @@ async function handlePollutionSelection() {
     const forecastDate = Math.floor(new Date(forecastDateHTML).getTime() / 1000);
     const now = Math.floor(new Date().getTime() / 1000);
     const currentDate = Math.floor(new Date().getTime() / 1000);
-    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)) + 1; // Rounds upwards and adds an extra day since the API always includes the current date.
+    const differenceInDays = Math.ceil((forecastDate - currentDate) / (60 * 60 * 24)); // Rounds upwards as the 'now' variable gets the current time and not the start of the day.
 
-    console.log(differenceInDays)
     if (forecastDate <= currentDate) {
         alert("You cannot enter a date prior to today.");
         return;
@@ -370,12 +369,14 @@ async function handlePollutionSelection() {
     // choose the number of days to forecast), remove the days out of range in the table.
     document.querySelectorAll("#future-pollution-data tr").forEach(row => {
         // Get the date of the cell to check whether it needs to be hidden.
-        const dateCell = row.children[0].innerHTML;
-        console.log(dateCell);
-        console.log(forecastDate);
+        const dateCell = row.id;
 
         if (dateCell > forecastDate) {
+            // Hide the row
             row.style.display = "none";
+        } else {
+            // Make the row visible again - this is only useful for rows that were hidden.
+            row.style.display = "";
         }
     });
 }
@@ -383,7 +384,9 @@ async function handlePollutionSelection() {
 async function handleFutureWeatherSelection() {
     event.preventDefault();
 
-    const [latitude, longitude] = getProjectGeolocation();
+    //const [latitude, longitude] = getProjectGeolocation();
+    // TODO: remove
+    const [latitude, longitude] = ["54.191", "-1.161"];
 
     // Get the date values from HTML.
     const forecastDateHTML = document.getElementById("future-weather-date").value;
