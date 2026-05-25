@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
 /**
  * Returns the description of the weather with a corresponding visual icon.
  * 
- * The icons used within this code is based of the icon IDs from:
+ * The icons used within this code is based of the weather IDs from:
  * https://openweathermap.org/weather-conditions#Weather-Condition-Codes-2
  * 
  * @param {*} weatherDescription 
@@ -45,19 +45,17 @@ function formatWeatherDescription(weatherDescription, weatherID) {
 
     // As some weather types contain different icons to the rest of their weather group,
     // handle them first.
-    if (weatherID == 511) {
-        icon = ""; // Freezing Rain
-    } else if (weatherID == 800) {
+    if (weatherID == 800) {
         icon = "9728"; // Clear Skies
     } else if (weatherID == 801) {
         icon = "9925"; // Few clouds
     } else {
         const iconDictionary = {
             2: "9928", // Thunderstorm,
-            3: "", // Drizzle //TODO: Add these remaining icons.
+            3: "9730", // Drizzle
             5: "9730", // Rain
             6: "9731", // Snowy
-            7: "", // "Atmosphere"        
+            7: "9926", // "Atmosphere"        
             8: "9729", // Scattered, broken and overcast clouds
         }
         icon = iconDictionary[weatherGroup];
