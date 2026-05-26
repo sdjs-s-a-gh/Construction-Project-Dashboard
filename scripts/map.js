@@ -120,7 +120,7 @@ function formatGeolocation(geolocation) {
  * @param {Object} project A construction project fetched from the database.
  * @param {Object} map The map object to place the marker on.
  * @param {Object} markerGroup The group the forthcoming marker belongs to.
- * @returns {Object} The marker
+ * @returns {Object} The marker.
  */
 function createMarker(project, map, markerGroup) {
     const [latitude, longitude] = formatGeolocation(project.geolocation)
