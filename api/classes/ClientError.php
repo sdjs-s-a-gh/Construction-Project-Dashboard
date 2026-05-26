@@ -1,12 +1,12 @@
 <?php
 
 /** 
- * Client Error Exception.
+ * Client Error Exceptions.
  * 
- * This class is used to handle any client errors denoted by the 4XX status
- * codes.
+ * This class is used to handle any client errors from the 4XX status codes - as well as 
+ * the 500 Server Error. The mapping between codes and their descriptions have been taken
+ * from the following MDN Web Doc: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status 
  * 
- * @author Scott Berston
  * Adapted from Year Two: Software Architecture - REST API.
  */
 class ClientError extends Exception
@@ -14,11 +14,11 @@ class ClientError extends Exception
     /** 
      * Constructs a new ClientError exception.
      * 
-     * This constructor allows setting an additional custom message and a HTTP
-     * error code. If a valid HTTP status code is provided, a relevant default
-     * message will be applied. Additional information, such as a specific
-     * parameter that caused the error, can be appended with the $message
-     * parameter.
+     * This constructor allows setting an additional custom message and a HTTP error code.
+     * The code itself is very similar to the parent constructor for throwing an error.
+     * If a valid HTTP status code is provided, a relevant default message will be applied.
+     * Additional information, such as a specific parameter that caused the error, can be 
+     * appended with the $message parameter.
      *  
      * @param string $message [optional] Additional information about what went
      * wrong.
@@ -43,10 +43,9 @@ class ClientError extends Exception
     /**
      * Sets a reason phrase for the ClientError's HTTP status code.
      * 
-     * This method assigns a standard reason phrase to the Exception based on
-     * its HTTP status code. If an additional message is supplied in the
-     * constructor, this will be appended to the standard reason phrase to
-     * further contextualise what went wrong to the user.
+     * This method assigns a standard reason phrase to the Exception based on its HTTP
+     * status code. If an additional message is supplied in the constructor, this will
+     * be appended to the standard phrase to further contextualise what went wrong.
      */
     private function setReasonPhrase(): void
     {

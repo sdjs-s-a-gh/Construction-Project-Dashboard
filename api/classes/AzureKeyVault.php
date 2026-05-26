@@ -3,11 +3,12 @@
 /**
  * Represents the Azure Key Vault.
  * 
- * This class handles interaction with the Azure and is used to retrieve secrets that are needed
- * within the website.
+ * This class handles interaction with the Azure Key Vault and is used to retrieve secrets 
+ * that are needed within the website. The code used here is adapted from the Week 9 workshop.
  */
 class AzureKeyVault
 {
+    // The variables required to authenticate access to the Key Vault.
     private string $tenantID;
     private string $clientID;
     private string $clientSecret;
@@ -58,7 +59,8 @@ class AzureKeyVault
         $response = file_get_contents($url, false, $context);
 
         // Throw a Server error should there be an issue with accessing the token,
-        // such as the website not having access to the Key Vault.
+        // such as the website not having access to the Key Vault or the API call
+        // being invalid.
         if ($response === false) {
             throw new ClientError(var_dump(error_get_last()), 500);
         }
@@ -80,10 +82,12 @@ class AzureKeyVault
      */
     public function getSecret(string $vaultName, string $secretName)
     {
+        // Get the access token to validate this application to access the vault and secret.
         $token = $this->accessToken;
 
         $url = "https://$vaultName.vault.azure.net/secrets/$secretName?api-version=7.4";
 
+        // Use the OAuth token as a Bearer token for authorisation.
         $options = [
             "http" => [
                 "header" => "Authorization: Bearer $token\r\n"
