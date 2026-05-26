@@ -6,7 +6,6 @@
  * This class encapsulates some key components of a HTTP response, including
  * the status code, headers and the output of JSON data.
  * 
- * @author Scott Berston
  * Adapted from Year Two: Software Architecture - REST API.
  */
 class Response

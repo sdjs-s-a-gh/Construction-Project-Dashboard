@@ -4,8 +4,9 @@
  * Environment Configuration.
  * 
  * This script returns an associative array containing environment-specific
- * configuration details for the API, including the API key and database file
- * path.
+ * configuration details for the API, removing hard-coded values. Ideally, this information
+ * would be in a traditional .env file, but it can still nevertheless be added to a .gitignore
+ * class to remove it from version control.
  *  
  * @return array<string, string> An associative array of environment-specific information.
  */

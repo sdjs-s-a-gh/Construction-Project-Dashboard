@@ -3,7 +3,7 @@
 /** 
  * Autoloads class files dynamically.
  * 
- * This subroutine automatically loads class files from the "classes/"
+ * This script automatically loads class files from the "classes/"
  * directory, thus removing the need to manually import each and every class
  * file.
  * 
@@ -12,7 +12,7 @@
  * @throws Exception If the class name does not match the name of the script
  * that contains it. This exception is caught by the general exception handler.
  * 
- * @author Scott Berston
+ * Adapted from Year Two: Software Architecture - REST API.
  */
 spl_autoload_register(function ($class): void
 {
@@ -21,6 +21,6 @@ spl_autoload_register(function ($class): void
     if (file_exists($file)) {
         require $file;
     } else {
-        throw new Exception("Error: Class file for $class not found!", 500);
+        throw new Exception("Error: Class file for $class not found.", 500);
     }
 });
