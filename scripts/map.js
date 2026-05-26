@@ -9,7 +9,7 @@ addEventListener("DOMContentLoaded", () => {
  * 
  * This function initialises the map variable for the user to interact with and view
  * all construction projects. 
- * @returns The map object to manipulate and add map markers.
+ * @returns {Object} The map object to manipulate and add map markers.
  */
 function initMap() {
     // Centre the coordinates roughly in the centre of all projects.
@@ -118,9 +118,9 @@ function formatGeolocation(geolocation) {
  * Places a marker onto the map where a construction project is located.
  *  
  * @param {Object} project A construction project fetched from the database.
- * @param {*} map The map object to place the marker on.
- * @param {*} markerGroup The group the forthcoming marker belongs to.
- * @returns 
+ * @param {Object} map The map object to place the marker on.
+ * @param {Object} markerGroup The group the forthcoming marker belongs to.
+ * @returns {Object} The marker
  */
 function createMarker(project, map, markerGroup) {
     const [latitude, longitude] = formatGeolocation(project.geolocation)
@@ -150,5 +150,5 @@ function createMarker(project, map, markerGroup) {
         updateProjectDetails(project.project_id, project.title, latitude, longitude);
     });
 
-    return marker;
+    return marker;  // TODO: remove?
 }
