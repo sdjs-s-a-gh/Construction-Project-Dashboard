@@ -7,7 +7,6 @@
  * including the request method, target path, query parameters, body parameters
  * and headers.
  * 
- * @author Scott Berston 
  * Adapted from Year Two: Software Architecture - REST API.
  */
 class Request
