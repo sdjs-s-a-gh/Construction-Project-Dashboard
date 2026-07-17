@@ -1,20 +1,24 @@
 <div align="center">
   <h1>
-    Construction Company Dashboard
+    Construction Project Dashboard
   </h1> 
 
-The __Construction Project Dashboard__ is a cloud-hosted website that was developed as part of the "Cloud Computing" module undertaken during my last year of university. This piece of coursework was developed throughout February to May 2026, with the code last updated on the 25 May 2026 at 3:21PM.  
+The __Construction Project Dashboard__ is a cloud-hosted website built using Microsoft Azure services for a fictional construction company. The website was developed to enable key decision-makers to identify which construction projects should proceeed based on current environmental conditions, aiming to minimise carbon emissions and meet internal sustainability goals.
 
-The website provides a comprehensive project management, environmental monitoring and interactive dashboard tool that aims to help a construction company minimise their carbon emissions. The dashboard enables senior decision-makers to view and interact with each of their client projects, presenting information from project leads and descriptions to, __crucially__, which projects should proceed based on current environmental conditions (weather and air quality).
+The dashboard presents interactive project information for the user - including site locations, descriptions, required equipment alongside current, historical and forecasted weather and air quality data. Using this information, the system evaluates environmental and safety thresholds to recommend whether construction work for a project should proceed. 
 </div>
 
 ---
+## Background
+This project was developed as part of the "Cloud Computing" module undertaken during my last year of university - throughout February to May 2026. The code was last updated on the 25 May 2026 at 3:21PM.
+
+---
 ## Key Features
-1. __Geospatial Project Mapping__ - Project locations are dynamically loaded from the Azure SQL database and plotted as interactive markers. Upon being pressed, the information for a specific project is displayed to the user - showcasing their title, Project Lead, description, equipment required and environmental analytics.
+1. __Geospatial Project Mapping__ - Project locations are dynamically loaded from the Azure SQL database and plotted as interactive markers. Upon being pressed, the information for a specific project is displayed to the user - showcasing its title, Project Lead, description, equipment required and environmental analytics.
 2. __Environmental Analytics__ - For each project, the system tracks real-time, past and forecasted environment metrics. These include:
     * __Weather__: Temperature (°C), wind speed and humidity.
     * __Pollution__: Air Quality Index (AQI) and concentrations of carbon monixide (CO), nitrogen dioxide (NO2), particulates 10mm in diameter (PM10) and particulates 2.5mm in diameter (PM2.5).
-3. __Site Suggestions__: Based upon the selected project's required equipment (like a Crane, Digger, Dumper), the system evaluates the current environmental data against safety and pollution thresholds to recommend whether or not work should proceed.
+3. __Site Recommendations__: Based upon the selected project's required equipment (like a Crane, Digger, Dumper), the system evaluates the current environmental data against safety and pollution thresholds to recommend whether or not work should proceed.
    
 ---
 ## Technology Stack
@@ -37,7 +41,7 @@ The website provides a comprehensive project management, environmental monitorin
   <tr>
     <td>Backend</td>
     <td>PHP 8.x</td>
-    <td>Handling API routing to fetch API credential as well as environment and database information</td>
+    <td>Handles API routing and secure communication with Azure Services and external APIs</td>
   </tr>
     <tr>
     <td>Database</td>
@@ -47,7 +51,7 @@ The website provides a comprehensive project management, environmental monitorin
     <tr>
     <td>External API: Credentials</td>
     <td>Azure Key Vault</td>
-    <td>Hiding OpenWeatherAPI credentials from the client and from displaying in plain text</td>
+    <td>Secure storage and retrieval of OpenWeatherAPI credentials, avoding presenting the information client-side or in plain text</td>
   </tr>
     <tr>
     <td>External API: Environmental Information</td>
